@@ -1,46 +1,113 @@
-// --- THEME SWITCHER (DARK / LIGHT) ---
+// --- DYNAMIC THEME SYSTEM (DARK / LIGHT) ---
 const themeToggle = document.getElementById('theme-toggle');
 const htmlEl = document.documentElement;
+const themeIcon = themeToggle.querySelector('i');
 
-const currentTheme = localStorage.getItem('auranet_theme') || 'dark';
-htmlEl.setAttribute('data-theme', currentTheme);
+const activeTheme = localStorage.getItem('auranet_theme') || 'dark';
+htmlEl.setAttribute('data-theme', activeTheme);
+updateThemeIcon(activeTheme);
 
 themeToggle.addEventListener('click', () => {
-    let active = htmlEl.getAttribute('data-theme');
-    let next = active === 'dark' ? 'light' : 'dark';
+    let current = htmlEl.getAttribute('data-theme');
+    let target = current === 'dark' ? 'light' : 'dark';
     
-    htmlEl.setAttribute('data-theme', next);
-    localStorage.setItem('auranet_theme', next);
+    htmlEl.setAttribute('data-theme', target);
+    localStorage.setItem('auranet_theme', target);
+    updateThemeIcon(target);
 });
 
-// --- COVERAGE CHECKER LOGIC ---
+function updateThemeIcon(theme) {
+    if(theme === 'dark') {
+        themeIcon.className = 'fa-solid fa-moon';
+    } else {
+        themeIcon.className = 'fa-solid fa-sun';
+    }
+}
+
+// --- INTERACTIVE SPOTLIGHT MOUSE TRACKER ---
+const spotlightCards = document.querySelectorAll('.spotlight-card');
+
+spotlightCards.forEach(card => {
+    card.addEventListener('mousemove', e => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        card.style.setProperty('--mouse-x', `${x}px`);
+        card.style.setProperty('--mouse-y', `${y}px`);
+    });
+});
+
+// --- RIPPLE EFFECT ON BUTTON CLICKS ---
+const rippleBtns = document.querySelectorAll('.ripple-btn');
+
+rippleBtns.forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        let x = e.clientX - e.target.getBoundingClientRect().left;
+        let y = e.clientY - e.target.getBoundingClientRect().top;
+
+        let span = document.createElement('span');
+        span.classList.add('ripple');
+        span.style.left = x + 'px';
+        span.style.top = y + 'px';
+        this.appendChild(span);
+
+        setTimeout(() => {
+            span.remove();
+        }, 600);
+    });
+});
+
+// --- SCROLL REVEAL OBSERVER ANIMATION ---
+const observerOptions = {
+    threshold: 0.12
+};
+
+const revealObserver = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+        if(entry.isIntersecting) {
+            entry.target.classList.add('active');
+            observer.unobserve(entry.target);
+        }
+    });
+}, observerOptions);
+
+document.querySelectorAll('.reveal-up').forEach(el => {
+    revealObserver.observe(el);
+});
+
+// --- STRICT COVERAGE CHECKER (PARIT MASIGI 1 & JALAN KEMUNING) ---
 const checkBtn = document.getElementById('check-btn');
 const areaInput = document.getElementById('area-input');
 const coverageResult = document.getElementById('coverage-result');
 
 checkBtn.addEventListener('click', () => {
-    const val = areaInput.value.trim().toLowerCase();
+    const rawVal = areaInput.value.trim().toLowerCase();
     
-    if(!val) {
-        coverageResult.textContent = 'Silakan masukkan nama jalan atau wilayah Anda terlebih dahulu!';
-        coverageResult.className = 'coverage-msg error';
+    if(!rawVal) {
+        coverageResult.textContent = 'Silakan masukkan nama area atau jalan terlebih dahulu!';
+        coverageResult.className = 'coverage-feedback error';
+        coverageResult.classList.remove('hidden');
         return;
     }
 
-    checkBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Checking...';
+    checkBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memeriksa...';
     
     setTimeout(() => {
-        checkBtn.textContent = 'Verifikasi Area';
+        checkBtn.innerHTML = '<span>Cek Area</span> <i class="fa-solid fa-magnifying-glass"></i>';
         
-        const validAreas = ['pontianak', 'perumahan', 'jalan', 'komplek', 'tanjung', 'sui', 'sungai', 'purnama', 'aura'];
-        let matched = validAreas.some(k => val.includes(k)) || val.length > 3;
+        // Validasi ketat khusus area Parit Masigi 1 dan Jalan Kemuning
+        const isParitMasigi = rawVal.includes('parit masigi') || rawVal.includes('masigi');
+        const isJalanKemuning = rawVal.includes('kemuning');
 
-        if(matched) {
-            coverageResult.innerHTML = `<i class="fa-solid fa-circle-check"></i> Jaringan Fiber Optic aktif! Area <b>${areaInput.value}</b> tercover sistem Aura.Net.`;
-            coverageResult.className = 'coverage-msg success';
+        if(isParitMasigi || isJalanKemuning) {
+            let areaName = isParitMasigi ? 'Parit Masigi 1' : 'Jalan Kemuning';
+            coverageResult.innerHTML = `<i class="fa-solid fa-circle-check"></i> Selamat! Jaringan Fiber Optic Aura.Net tersedia di wilayah <b>${areaName}</b>. Silakan lanjutkan pendaftaran via WhatsApp.`;
+            coverageResult.className = 'coverage-feedback success';
         } else {
-            coverageResult.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> Mohon maaf, area <b>${areaInput.value}</b> belum terjangkau. Hubungi WhatsApp untuk survey perluasan.`;
-            coverageResult.className = 'coverage-msg error';
+            coverageResult.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> Mohon maaf, area <b>${areaInput.value}</b> belum tercover jaringan kami. Coverage aktif saat ini khusus untuk wilayah <strong>Parit Masigi 1</strong> dan <strong>Jalan Kemuning</strong>.`;
+            coverageResult.className = 'coverage-feedback error';
         }
+        coverageResult.classList.remove('hidden');
     }, 1000);
 });
