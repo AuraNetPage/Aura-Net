@@ -3,178 +3,241 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aura.Net — Internet Fiber Optic Cepat & Tanpa Batas</title>
+    <title>AURA.NET // Next-Gen Fiber Optic Intelligence</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 
-    <!-- Background Dynamic Glowing Orbs -->
-    <div class="bg-glow">
-        <div class="orb orb-1"></div>
-        <div class="orb orb-2"></div>
-        <div class="orb orb-3"></div>
+    <!-- Cyberpunk Grid Background Overlay -->
+    <div class="cyber-grid"></div>
+    
+    <!-- Dynamic Glowing Ambient Orbs -->
+    <div class="ambient-glow">
+        <div class="glow-orb orb-alpha"></div>
+        <div class="glow-orb orb-beta"></div>
     </div>
 
-    <!-- Navigation Bar -->
-    <header class="glass-nav">
-        <div class="nav-container">
-            <div class="logo">
-                <i class="fa-solid fa-bolt-lightning"></i>
-                <span>Aura<span class="highlight">.Net</span></span>
-            </div>
-            <nav class="nav-links">
-                <a href="#home" class="active">Beranda</a>
-                <a href="#packages">Paket</a>
-                <a href="#features">Keunggulan</a>
-                <a href="#coverage">Cek Area</a>
+    <!-- Floating Futuristic Navbar -->
+    <header class="nexus-nav">
+        <div class="nav-wrapper">
+            <a href="#home" class="brand-logo">
+                <div class="logo-icon-box">
+                    <i class="fa-solid fa-bolt-lightning"></i>
+                </div>
+                <span class="logo-text">AURA<span class="neon-dot">.</span>NET</span>
+            </a>
+            
+            <nav class="nav-menu">
+                <a href="#home" class="nav-link active"><span>01.</span> Beranda</a>
+                <a href="#matrix-package" class="nav-link"><span>02.</span> Paket Matrix</a>
+                <a href="#features" class="nav-link"><span>03.</span> Core Tech</a>
+                <a href="#coverage" class="nav-link"><span>04.</span> Coverage</a>
             </nav>
-            <div class="nav-actions">
-                <button id="theme-toggle" class="glass-btn icon-only" aria-label="Ganti Tema">
-                    <i class="fa-solid fa-moon"></i>
+
+            <div class="nav-utilities">
+                <button id="theme-toggle" class="utility-btn" aria-label="Toggle Theme">
+                    <i class="fa-solid fa-sun-bright"></i>
                 </button>
-                <a href="https://wa.me/62895630094597" target="_blank" class="glass-btn primary ripple-btn">
-                    <i class="fa-brands fa-whatsapp"></i> Hubungi Kami
+                <a href="https://wa.me/62895630094597?text=Halo%20Aura.Net,%20saya%20tertarik%20mengaktifkan%20koneksi%20internet%20Aura.Net." target="_blank" class="utility-btn cta-pulse">
+                    <i class="fa-brands fa-whatsapp"></i>
                 </a>
             </div>
         </div>
     </header>
 
-    <!-- Hero Section -->
+    <!-- Main Hero Section -->
     <section id="home" class="hero-section">
-        <div class="hero-content">
-            <div class="badge-pill">
-                <i class="fa-solid fa-shield-halved"></i> Jaringan Fiber Optic Stabil & Unlimited
-            </div>
-            <h1>Internet Rumah & Bisnis Tanpa Lemot bersama <span class="gradient-text">Aura.Net</span></h1>
-            <p>Nikmati koneksi internet super cepat, ping rendah, dan stabil untuk gaming, streaming, serta produktivitas kerja tanpa batasan FUP.</p>
-            <div class="hero-buttons">
-                <a href="#packages" class="glass-btn primary pulse-glow ripple-btn">
-                    <span>Lihat Paket</span> <i class="fa-solid fa-arrow-right"></i>
-                </a>
-                <a href="#coverage" class="glass-btn secondary ripple-btn">
-                    <span>Cek Jangkauan</span> <i class="fa-solid fa-map-location-dot"></i>
-                </a>
-            </div>
-        </div>
-        <div class="hero-visual">
-            <div class="glass-card router-card float-anim">
-                <div class="card-icon"><i class="fa-solid fa-server"></i></div>
-                <div class="card-info">
-                    <h3>Server Ultra Stabil</h3>
-                    <p>Uptime 99.9% Bebas Gangguan</p>
+        <div class="hero-container">
+            <div class="hero-content">
+                <div class="cyber-badge">
+                    <span class="pulse-indicator"></span>
+                    <span class="badge-text">SECURE FIBER BACKBONE // DEDICATED SPEED</span>
                 </div>
-                <div class="status-indicator">
-                    <span class="pulse-dot"></span> Online
+                <h1 class="hero-title">
+                    Koneksi Tanpa Batas, <br>
+                    <span class="text-gradient">Performa Tanpa Kompromi.</span>
+                </h1>
+                <p class="hero-desc">
+                    Infrastruktur jaringan fiber optic generasi mutakhir dirancang khusus untuk kestabilan maksimal gaming, streaming, dan produktivitas digital Anda di Pontianak.
+                </p>
+                <div class="hero-action-group">
+                    <a href="#matrix-package" class="cyber-btn primary ripple-btn">
+                        <span>Aktivasi Paket</span>
+                        <i class="fa-solid fa-arrow-right-long"></i>
+                    </a>
+                    <a href="#coverage" class="cyber-btn secondary ripple-btn">
+                        <span>Cek Lokasi Anda</span>
+                        <i class="fa-solid fa-radar"></i>
+                    </a>
                 </div>
             </div>
-            <div class="glass-card speed-card float-anim delay-card">
-                <div class="speed-number">10 <span>Mbps</span></div>
-                <p>Kecepatan Simetris Real-time</p>
+
+            <!-- Futuristic Floating Hologram Card -->
+            <div class="hero-hologram">
+                <div class="holo-card glass-morph float-slow">
+                    <div class="holo-header">
+                        <span class="status-tag online"><i class="fa-solid fa-circle"></i> NODE ACTIVE</span>
+                        <span class="node-id">SRV-AURA-01</span>
+                    </div>
+                    <div class="holo-body">
+                        <div class="metric-box">
+                            <span class="metric-label">DOWNLOAD SPEED</span>
+                            <span class="metric-value">10 <span>Mbps</span></span>
+                        </div>
+                        <div class="metric-graph">
+                            <div class="waveform-bar"></div>
+                            <div class="waveform-bar"></div>
+                            <div class="waveform-bar"></div>
+                            <div class="waveform-bar"></div>
+                            <div class="waveform-bar"></div>
+                        </div>
+                    </div>
+                    <div class="holo-footer">
+                        <span><i class="fa-solid fa-ping-pong"></i> Latency: 4ms</span>
+                        <span><i class="fa-solid fa-shield-check"></i> FUP: Unlimited</span>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- Packages Section (Hanya 1 Paket Utama) -->
-    <section id="packages" class="packages-section">
-        <div class="section-header">
-            <h2>Pilihan Paket Internet</h2>
-            <p>Paket internet fiber optic terbaik dan ekonomis untuk kebutuhan Anda</p>
+    <!-- Single Exclusive Package Matrix Section -->
+    <section id="matrix-package" class="matrix-section">
+        <div class="section-heading">
+            <span class="section-tag">EKSKLUSIF PLAN</span>
+            <h2>Paket Layanan Utama</h2>
+            <p>Satu pilihan terbaik dengan spesifikasi maksimal untuk seluruh kebutuhan rumah dan bisnis Anda.</p>
         </div>
-        <div class="packages-single-wrapper">
-            <div class="glass-card package-card featured ripple-card">
-                <div class="popular-badge">Unlimited Tanpa FUP</div>
-                <div class="package-header">
-                    <h3>Paket Home & Business</h3>
-                    <p>Ideal untuk browsing, sosmed, streaming & WFH</p>
+
+        <div class="matrix-container">
+            <div class="cyber-card package-nexus glass-morph ripple-card">
+                <div class="card-glow-border"></div>
+                <div class="package-top-badge">
+                    <i class="fa-solid fa-crown"></i> ULTIMATE VALUE
                 </div>
-                <div class="package-price">
-                    <span class="currency">Rp</span>150K<span>/bulan</span>
+                <div class="package-info-head">
+                    <h3>Aura Home & Business Pro</h3>
+                    <p>Paket fiber optic stabil kecepatan tinggi tanpa batasan kuota.</p>
                 </div>
-                <ul class="package-features">
-                    <li><i class="fa-solid fa-check"></i> Kecepatan hingga 10 Mbps</li>
-                    <li><i class="fa-solid fa-check"></i> Unlimited Kuota Tanpa FUP</li> 
-                    <li><i class="fa-solid fa-check"></i> Cocok untuk 3 - 6 Perangkat</li>
-                    <li><i class="fa-solid fa-check"></i> Support Teknis Responsif</li>
+                
+                <div class="package-price-box">
+                    <span class="currency-symbol">Rp</span>
+                    <span class="price-digits">150K</span>
+                    <span class="price-period">/ bulan</span>
+                </div>
+
+                <div class="spec-divider"></div>
+
+                <ul class="spec-list">
+                    <li>
+                        <div class="spec-icon"><i class="fa-solid fa-gauge-high"></i></div>
+                        <span>Kecepatan Simetris hingga <strong>10 Mbps</strong></span>
+                    </li>
+                    <li>
+                        <div class="spec-icon"><i class="fa-solid fa-infinity"></i></div>
+                        <span><strong>Unlimited Tanpa FUP</strong> (Fair Usage Policy)</span>
+                    </li>
+                    <li>
+                        <div class="spec-icon"><i class="fa-solid fa-users"></i></div>
+                        <span>Optimal untuk 3 - 6 Perangkat Sekaligus</span>
+                    </li>
+                    <li>
+                        <div class="spec-icon"><i class="fa-solid fa-headset"></i></div>
+                        <span>Prioritas Layanan Support Teknis 24/7</span>
+                    </li>
                 </ul>
-                <a href="https://wa.me/62895630094597?text=Halo%20Aura.Net,%20saya%20tertarik%20berlangganan%20Paket%20Internet%2010Mbps%20(Rp150K/bulan)." target="_blank" class="glass-btn primary full-width ripple-btn">
-                    <i class="fa-brands fa-whatsapp"></i> Berlangganan Sekarang
+
+                <a href="https://wa.me/62895630094597?text=Halo%20Aura.Net,%20saya%20ingin%20berlangganan%20Paket%20Utama%2010Mbps%20(Rp150K/bulan)." target="_blank" class="cyber-btn primary full-width ripple-btn">
+                    <i class="fa-brands fa-whatsapp"></i>
+                    <span>Klaim & Berlangganan</span>
                 </a>
             </div>
         </div>
     </section>
 
-    <!-- Features Section -->
-    <section id="features" class="features-section">
-        <div class="section-header">
-            <h2>Kenapa Memilih Aura.Net?</h2>
-            <p>Teknologi modern untuk pengalaman digital tanpa hambatan</p>
+    <!-- Core Technology / Features Section -->
+    <section id="features" class="tech-section">
+        <div class="section-heading">
+            <span class="section-tag">ARSITEKTUR TEKNOLOGI</span>
+            <h2>Keunggulan Sistem Aura.Net</h2>
+            <p>Dibangun dengan standar jaringan enterprise demi kenyamanan transfer data digital.</p>
         </div>
-        <div class="features-grid">
-            <div class="glass-card feature-box">
-                <div class="feature-icon"><i class="fa-solid fa-bolt"></i></div>
-                <h3>Kecepatan Stabil</h3>
-                <p>Didukung infrastruktur fiber optic berkualitas tinggi yang handal dan tahan segala cuaca.</p>
+
+        <div class="tech-grid">
+            <div class="cyber-card tech-box glass-morph">
+                <div class="tech-icon-wrapper"><i class="fa-solid fa-bolt-lightning"></i></div>
+                <h3>Fiber Backbone Murni</h3>
+                <p>Jalur transmisi cahaya optik tahan terhadap cuaca ekstrem serta minim gangguan elektromagnetik.</p>
             </div>
-            <div class="glass-card feature-box">
-                <div class="feature-icon"><i class="fa-solid fa-infinity"></i></div>
-                <h3>Tanpa Batasan FUP</h3>
-                <p>Download, upload, dan streaming sepuasnya tanpa takut kecepatan melambat di tengah bulan.</p>
+            <div class="cyber-card tech-box glass-morph">
+                <div class="tech-icon-wrapper"><i class="fa-solid fa-microchip"></i></div>
+                <h3>Manajemen QoS Pintar</h3>
+                <p>Pengaturan trafik router tingkat lanjut mengutamakan kelancaran meeting, gaming, dan video streaming.</p>
             </div>
-            <div class="glass-card feature-box">
-                <div class="feature-icon"><i class="fa-solid fa-headset"></i></div>
-                <h3>Support Responsif</h3>
-                <p>Tim teknis handal siap membantu pemeliharaan dan kendala jaringan Anda kapan pun dibutuhkan.</p>
+            <div class="cyber-card tech-box glass-morph">
+                <div class="tech-icon-wrapper"><i class="fa-solid fa-headset"></i></div>
+                <h3>Respon Cepat Teknisi</h3>
+                <p>Tim operasional lapangan siap siaga melakukan pemeliharaan cepat apabila terjadi kendala teknis.</p>
             </div>
         </div>
     </section>
 
-    <!-- Coverage Check Section -->
+    <!-- Coverage Interactive Check -->
     <section id="coverage" class="coverage-section">
-        <div class="glass-card coverage-box">
-            <div class="coverage-content">
-                <h2>Cek Jangkauan Jaringan di Area Anda</h2>
-                <p>Pastikan lokasi rumah atau tempat usaha Anda sudah tercover jaringan Fiber Optic Aura.Net.</p>
-                <div class="search-box">
-                    <input type="text" id="area-input" placeholder="Masukkan nama jalan / perumahan / wilayah Anda...">
-                    <button id="check-btn" class="glass-btn primary ripple-btn"><i class="fa-solid fa-magnifying-glass"></i> Cek</button>
+        <div class="cyber-card coverage-card-box glass-morph">
+            <div class="coverage-inner">
+                <div class="coverage-titles">
+                    <span class="section-tag">GEOLOKASI JARINGAN</span>
+                    <h2>Cek Ketersediaan Area</h2>
+                    <p>Masukkan nama jalan atau kompleks perumahan Anda untuk verifikasi port jaringan terdekat.</p>
                 </div>
-                <div id="coverage-result" class="coverage-result hidden"></div>
+                <div class="coverage-input-group">
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-map-pin"></i>
+                        <input type="text" id="area-input" placeholder="Contoh: Jl. Gusti Hamzah / Komplek ...">
+                    </div>
+                    <button id="check-btn" class="cyber-btn primary ripple-btn">
+                        <span>Verifikasi</span>
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                </div>
+                <div id="coverage-result" class="coverage-alert hidden"></div>
             </div>
         </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="glass-footer">
+    <!-- Footer Nexus -->
+    <footer class="nexus-footer">
         <div class="footer-container">
-            <div class="footer-brand">
-                <div class="logo">
-                    <i class="fa-solid fa-bolt-lightning"></i>
-                    <span>Aura<span class="highlight">.Net</span></span>
+            <div class="footer-col brand-col">
+                <div class="brand-logo footer-logo">
+                    <div class="logo-icon-box"><i class="fa-solid fa-bolt-lightning"></i></div>
+                    <span class="logo-text">AURA<span class="neon-dot">.</span>NET</span>
                 </div>
-                <p>Penyedia layanan internet fiber optic handal untuk koneksi tanpa batas.</p>
+                <p>Penyedia layanan internet mandiri berkecepatan tinggi dengan infrastruktur modern di Pontianak dan sekitarnya.</p>
             </div>
-            <div class="footer-links">
-                <h4>Navigasi</h4>
-                <a href="#home">Beranda</a>
-                <a href="#packages">Paket</a>
-                <a href="#features">Keunggulan</a>
-                <a href="#coverage">Cek Area</a>
+            <div class="footer-col links-col">
+                <h4>Navigasi Utama</h4>
+                <a href="#home">Beranda Sistem</a>
+                <a href="#matrix-package">Paket Matrix</a>
+                <a href="#features">Core Tech</a>
+                <a href="#coverage">Cek Coverage</a>
             </div>
-            <div class="footer-contact">
-                <h4>Hubungi Kami</h4>
+            <div class="footer-col contact-col">
+                <h4>Pusat Kontak</h4>
                 <p><i class="fa-brands fa-whatsapp"></i> +62 895-6300-94597</p>
-                <p><i class="fa-solid fa-envelope"></i> info@auranet.id</p>
-                <p><i class="fa-solid fa-location-dot"></i> Pontianak & Sekitarnya</p>
+                <p><i class="fa-solid fa-envelope"></i> control@auranet.id</p>
+                <p><i class="fa-solid fa-location-dot"></i> Pontianak, Kalimantan Barat</p>
             </div>
         </div>
-        <div class="footer-bottom">
-            <p>&copy; 2026 Aura.Net. All rights reserved.</p>
+        <div class="footer-bottom-bar">
+            <p>&copy; 2026 AURA.NET INFRASTRUCTURE. ALL RIGHTS RESERVED.</p>
         </div>
     </footer>
 
     <script src="script.js"></script>
 </body>
     </html>
-    
+                        
