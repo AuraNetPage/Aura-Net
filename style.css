@@ -1,30 +1,30 @@
 /* --- CSS VARIABLES & THEMES --- */
 :root {
     --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    --glass-bg: rgba(255, 255, 255, 0.65);
-    --glass-border: rgba(255, 255, 255, 0.8);
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.9);
     --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
     --text-color: #1d1d1f;
     --text-muted: #515154;
     --primary-color: #0071e3;
     --primary-hover: #0077ed;
     --accent-glow: rgba(0, 113, 227, 0.3);
-    --card-bg: rgba(255, 255, 255, 0.45);
-    --nav-bg: rgba(255, 255, 255, 0.75);
+    --card-bg: rgba(255, 255, 255, 0.5);
+    --nav-bg: rgba(255, 255, 255, 0.85);
 }
 
 [data-theme="dark"] {
     --bg-gradient: linear-gradient(135deg, #0b0f19 0%, #1a2238 100%);
-    --glass-bg: rgba(22, 27, 34, 0.6);
-    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-bg: rgba(22, 27, 34, 0.65);
+    --glass-border: rgba(255, 255, 255, 0.12);
     --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
     --text-color: #f5f5f7;
     --text-muted: #a1a1a6;
     --primary-color: #2997ff;
     --primary-hover: #0077ed;
     --accent-glow: rgba(41, 151, 255, 0.35);
-    --card-bg: rgba(30, 36, 50, 0.5);
-    --nav-bg: rgba(18, 22, 31, 0.75);
+    --card-bg: rgba(30, 36, 50, 0.55);
+    --nav-bg: rgba(18, 22, 31, 0.85);
 }
 
 * {
@@ -103,7 +103,6 @@ body {
     border: 1px solid var(--glass-border);
     box-shadow: var(--glass-shadow);
     border-radius: 24px;
-    transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s ease;
 }
 
 /* --- NAVIGATION --- */
@@ -278,6 +277,7 @@ body {
 .hero-buttons {
     display: flex;
     gap: 15px;
+    flex-wrap: wrap;
 }
 
 .pulse-glow {
@@ -391,7 +391,7 @@ body {
 
 .section-header {
     text-align: center;
-    margin-bottom: 60px;
+    margin-bottom: 50px;
 }
 
 .section-header h2 {
@@ -405,24 +405,26 @@ body {
     font-size: 1.05rem;
 }
 
-.packages-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 30px;
+.packages-single-wrapper {
+    display: flex;
+    justify-content: center;
+    max-width: 480px;
+    margin: 0 auto;
 }
 
 .package-card {
-    padding: 40px 30px;
+    padding: 45px 35px;
     position: relative;
     background: var(--card-bg);
     display: flex;
     flex-direction: column;
+    width: 100%;
 }
 
 .package-card.featured {
     border: 2px solid var(--primary-color);
-    transform: scale(1.03);
     background: var(--glass-bg);
+    box-shadow: 0 15px 35px var(--accent-glow);
 }
 
 .popular-badge {
@@ -431,7 +433,7 @@ body {
     right: 30px;
     background: var(--primary-color);
     color: #fff;
-    padding: 6px 14px;
+    padding: 6px 16px;
     border-radius: 20px;
     font-size: 0.8rem;
     font-weight: 700;
@@ -439,18 +441,18 @@ body {
 }
 
 .package-header h3 {
-    font-size: 1.5rem;
+    font-size: 1.6rem;
     margin-bottom: 8px;
 }
 
 .package-header p {
     color: var(--text-muted);
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     margin-bottom: 25px;
 }
 
 .package-price {
-    font-size: 2.8rem;
+    font-size: 3rem;
     font-weight: 800;
     color: var(--primary-color);
     margin-bottom: 30px;
@@ -462,7 +464,7 @@ body {
 }
 
 .package-price span:not(.currency) {
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     color: var(--text-muted);
     font-weight: 400;
 }
@@ -470,15 +472,14 @@ body {
 .package-features {
     list-style: none;
     margin-bottom: 35px;
-    flex-grow: 1;
 }
 
 .package-features li {
     display: flex;
     align-items: center;
     gap: 12px;
-    margin-bottom: 14px;
-    font-size: 0.95rem;
+    margin-bottom: 16px;
+    font-size: 1rem;
     color: var(--text-muted);
 }
 
@@ -493,7 +494,7 @@ body {
 /* --- FEATURES SECTION --- */
 .features-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 30px;
 }
 
@@ -669,7 +670,7 @@ body {
         justify-content: center;
     }
     .hero-content h1 {
-        font-size: 2.5rem;
+        font-size: 2.4rem;
     }
     .nav-links {
         display: none;
@@ -678,5 +679,7 @@ body {
         grid-template-columns: 1fr;
         gap: 30px;
     }
+    .glass-footer {
+        padding: 40px 25px 20px;
     }
-    
+        }
