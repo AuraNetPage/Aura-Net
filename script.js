@@ -1,78 +1,46 @@
-// --- DYNAMIC THEME SYSTEM (LIGHT/DARK) ---
-const themeToggleBtn = document.getElementById('theme-toggle');
-const htmlElement = document.documentElement;
-const themeIcon = themeToggleBtn.querySelector('i');
+// --- THEME SWITCHER (DARK / LIGHT) ---
+const themeToggle = document.getElementById('theme-toggle');
+const htmlEl = document.documentElement;
 
-const activeTheme = localStorage.getItem('auranet_theme') || 'dark';
-htmlElement.setAttribute('data-theme', activeTheme);
-updateThemeIconUI(activeTheme);
+const currentTheme = localStorage.getItem('auranet_theme') || 'dark';
+htmlEl.setAttribute('data-theme', currentTheme);
 
-themeToggleBtn.addEventListener('click', () => {
-    let current = htmlElement.getAttribute('data-theme');
-    let targetTheme = current === 'dark' ? 'light' : 'dark';
+themeToggle.addEventListener('click', () => {
+    let active = htmlEl.getAttribute('data-theme');
+    let next = active === 'dark' ? 'light' : 'dark';
     
-    htmlElement.setAttribute('data-theme', targetTheme);
-    localStorage.setItem('auranet_theme', targetTheme);
-    updateThemeIconUI(targetTheme);
+    htmlEl.setAttribute('data-theme', next);
+    localStorage.setItem('auranet_theme', next);
 });
 
-function updateThemeIconUI(theme) {
-    if(theme === 'dark') {
-        themeIcon.className = 'fa-solid fa-sun-bright';
-    } else {
-        themeIcon.className = 'fa-solid fa-moon';
-    }
-}
-
-// --- RIPPLE ANIMATION EFFECT ON BUTTONS ---
-const interactiveButtons = document.querySelectorAll('.ripple-btn');
-
-interactiveButtons.forEach(btn => {
-    btn.addEventListener('click', function(e) {
-        let xCoord = e.clientX - e.target.getBoundingClientRect().left;
-        let yCoord = e.clientY - e.target.getBoundingClientRect().top;
-
-        let rippleCircle = document.createElement('span');
-        rippleCircle.classList.add('ripple');
-        rippleCircle.style.left = xCoord + 'px';
-        rippleCircle.style.top = yCoord + 'px';
-        this.appendChild(rippleCircle);
-
-        setTimeout(() => {
-            rippleCircle.remove();
-        }, 600);
-    });
-});
-
-// --- COVERAGE CHECK SIMULATOR ENGINE ---
+// --- COVERAGE CHECKER LOGIC ---
 const checkBtn = document.getElementById('check-btn');
 const areaInput = document.getElementById('area-input');
 const coverageResult = document.getElementById('coverage-result');
 
 checkBtn.addEventListener('click', () => {
-    const queryArea = areaInput.value.trim().toLowerCase();
+    const val = areaInput.value.trim().toLowerCase();
     
-    if(!queryArea) {
-        coverageResult.textContent = 'Masukkan nama jalan atau wilayah area terlebih dahulu!';
-        coverageResult.className = 'coverage-alert error';
+    if(!val) {
+        coverageResult.textContent = 'Silakan masukkan nama jalan atau wilayah Anda terlebih dahulu!';
+        coverageResult.className = 'coverage-msg error';
         return;
     }
 
-    checkBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verifying...';
+    checkBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Checking...';
     
     setTimeout(() => {
-        checkBtn.innerHTML = '<span>Verifikasi</span> <i class="fa-solid fa-magnifying-glass"></i>';
+        checkBtn.textContent = 'Verifikasi Area';
         
-        const validKeywords = ['pontianak', 'perumahan', 'jalan', 'komplek', 'tanjung', 'sui', 'sungai', 'purnama', 'setiabudi', 'Aura'];
-        let isAvailable = validKeywords.some(kw => queryArea.includes(kw)) || queryArea.length > 3;
+        const validAreas = ['pontianak', 'perumahan', 'jalan', 'komplek', 'tanjung', 'sui', 'sungai', 'purnama', 'aura'];
+        let matched = validAreas.some(k => val.includes(k)) || val.length > 3;
 
-        if(isAvailable) {
-            coverageResult.innerHTML = `<i class="fa-solid fa-circle-check"></i> Node Fiber Optic aktif! Jaringan Aura.Net terdeteksi di wilayah <b>${areaInput.value}</b>. Silakan lanjutkan registrasi via WhatsApp.`;
-            coverageResult.className = 'coverage-alert success';
+        if(matched) {
+            coverageResult.innerHTML = `<i class="fa-solid fa-circle-check"></i> Jaringan Fiber Optic aktif! Area <b>${areaInput.value}</b> tercover sistem Aura.Net.`;
+            coverageResult.className = 'coverage-msg success';
         } else {
-            coverageResult.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Area <b>${areaInput.value}</b> belum terhubung langsung. Hubungi tim engineering kami untuk survey ekspansi jaringan khusus.`;
-            coverageResult.className = 'coverage-alert error';
+            coverageResult.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> Mohon maaf, area <b>${areaInput.value}</b> belum terjangkau. Hubungi WhatsApp untuk survey perluasan.`;
+            coverageResult.className = 'coverage-msg error';
         }
-    }, 1200);
+    }, 1000);
 });
-        
