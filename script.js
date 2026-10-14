@@ -1,4 +1,44 @@
-// --- DYNAMIC THEME SYSTEM (DARK / LIGHT) ---
+// --- INTERACTIVE STATE SWITCHER (FIGMA SMART ANIMATE STYLE) ---
+function switchVariant(variant) {
+    // Update active button state
+    document.querySelectorAll('.var-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelector(`[data-variant="${variant}"]`).classList.add('active');
+
+    // Ubah kelas state pada body untuk memicu transisi warna latar belakang & gradien
+    document.body.className = `theme-${variant}-state`;
+
+    // Ambil elemen teks & card untuk diberikan animasi transisi halus
+    const titleEl = document.getElementById('hero-title');
+    const descEl = document.getElementById('hero-desc');
+    const badgeTypeEl = document.getElementById('card-badge-type');
+    const speedEl = document.getElementById('showcase-speed');
+    const showcaseCard = document.querySelector('.showcase-card');
+
+    // Berikan efek animasi masuk (morph bounce)
+    showcaseCard.classList.remove('state-morph-anim');
+    void showcaseCard.offsetWidth; // Trigger reflow
+    showcaseCard.classList.add('state-morph-anim');
+
+    // Atur konten dinamis berdasarkan varian tombol yang ditekan
+    if (variant === 'cyan') {
+        titleEl.innerHTML = `Koneksi Tanpa Batas, <br><span class="gradient-headline">Performa Home Pro.</span>`;
+        descEl.textContent = `Infrastruktur fiber optic optimal untuk aktivitas keluarga, streaming 4K, dan work from home tanpa hambatan.`;
+        badgeTypeEl.textContent = 'HOME PRO';
+        speedEl.innerHTML = `10 <span>Mbps</span>`;
+    } else if (variant === 'magenta') {
+        titleEl.innerHTML = `Gaming Tanpa Lag, <br><span class="gradient-headline">Ultra Low Latency.</span>`;
+        descEl.textContent = `Jalur khusus router prioritas gaming dengan stabilitas ping maksimal dan bebas gangguan jitter.`;
+        badgeTypeEl.textContent = 'GAMING ULTRA';
+        speedEl.innerHTML = `25 <span>Mbps</span>`;
+    } else if (variant === 'violet') {
+        titleEl.innerHTML = `Solusi Bisnis Profesional, <br><span class="gradient-headline">Dedicated Enterprise.</span>`;
+        descEl.textContent = `Kapasitas bandwidth simetris penuh dan stabil untuk kelancaran transaksi serta operasional kantor Anda.`;
+        badgeTypeEl.textContent = 'ENTERPRISE';
+        speedEl.innerHTML = `50 <span>Mbps</span>`;
+    }
+}
+
+// --- THEME SYSTEM (DARK / LIGHT) ---
 const themeToggle = document.getElementById('theme-toggle');
 const htmlEl = document.documentElement;
 const themeIcon = themeToggle.querySelector('i');
@@ -24,7 +64,7 @@ function updateThemeIcon(theme) {
     }
 }
 
-// --- INTERACTIVE SPOTLIGHT MOUSE TRACKER ---
+// --- INTERACTIVE SPOTLIGHT MOUSE TRACKING ---
 const spotlightCards = document.querySelectorAll('.spotlight-card');
 
 spotlightCards.forEach(card => {
@@ -38,7 +78,7 @@ spotlightCards.forEach(card => {
     });
 });
 
-// --- RIPPLE EFFECT ON BUTTON CLICKS ---
+// --- BUTTON RIPPLE EFFECT ---
 const rippleBtns = document.querySelectorAll('.ripple-btn');
 
 rippleBtns.forEach(btn => {
@@ -56,24 +96,6 @@ rippleBtns.forEach(btn => {
             span.remove();
         }, 600);
     });
-});
-
-// --- SCROLL REVEAL OBSERVER ANIMATION ---
-const observerOptions = {
-    threshold: 0.12
-};
-
-const revealObserver = new IntersectionObserver((entries, observer) => {
-    entries.forEach(entry => {
-        if(entry.isIntersecting) {
-            entry.target.classList.add('active');
-            observer.unobserve(entry.target);
-        }
-    });
-}, observerOptions);
-
-document.querySelectorAll('.reveal-up').forEach(el => {
-    revealObserver.observe(el);
 });
 
 // --- STRICT COVERAGE CHECKER (PARIT MASIGI 1 & JALAN KEMUNING) ---
@@ -96,13 +118,12 @@ checkBtn.addEventListener('click', () => {
     setTimeout(() => {
         checkBtn.innerHTML = '<span>Cek Area</span> <i class="fa-solid fa-magnifying-glass"></i>';
         
-        // Validasi ketat khusus area Parit Masigi 1 dan Jalan Kemuning
         const isParitMasigi = rawVal.includes('parit masigi') || rawVal.includes('masigi');
         const isJalanKemuning = rawVal.includes('kemuning');
 
         if(isParitMasigi || isJalanKemuning) {
             let areaName = isParitMasigi ? 'Parit Masigi 1' : 'Jalan Kemuning';
-            coverageResult.innerHTML = `<i class="fa-solid fa-circle-check"></i> Selamat! Jaringan Fiber Optic Aura.Net tersedia di wilayah <b>${areaName}</b>. Silakan lanjutkan pendaftaran via WhatsApp.`;
+            coverageResult.innerHTML = `<i class="fa-solid fa-circle-check"></i> Selamat! Jaringan Fiber Optic Aura.Net aktif di wilayah <b>${areaName}</b>. Silakan lanjutkan pendaftaran via WhatsApp.`;
             coverageResult.className = 'coverage-feedback success';
         } else {
             coverageResult.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> Mohon maaf, area <b>${areaInput.value}</b> belum tercover jaringan kami. Coverage aktif saat ini khusus untuk wilayah <strong>Parit Masigi 1</strong> dan <strong>Jalan Kemuning</strong>.`;

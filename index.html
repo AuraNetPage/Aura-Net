@@ -3,22 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AURA.NET // High-Performance Fiber Infrastructure</title>
+    <title>AURA.NET // Dynamic Product & State Showcase</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Google Fonts: Plus Jakarta Sans & Syne untuk Tipografi Profesional & Modern -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body>
+<body class="theme-cyan-state">
 
-    <!-- Cinematic Background Ambient Grid & Particles -->
-    <div class="cyber-mesh"></div>
-    <div class="ambient-glow">
-        <div class="glow-orb orb-one"></div>
-        <div class="glow-orb orb-two"></div>
+    <!-- Dynamic Morphing Background Mesh -->
+    <div class="morph-bg-layer">
+        <div class="morph-blob blob-a"></div>
+        <div class="morph-blob blob-b"></div>
     </div>
 
-    <!-- Floating Glass Dock Navigation -->
+    <!-- Floating Glass Navbar -->
     <header class="glass-dock">
         <div class="dock-container">
             <a href="#hero" class="brand-identity">
@@ -35,7 +33,7 @@
                 <button id="theme-toggle" class="control-btn" aria-label="Toggle Theme">
                     <i class="fa-solid fa-moon"></i>
                 </button>
-                <a href="https://wa.me/62895630094597?text=Halo%20Aura.Net,%20saya%20tertarik%20berlangganan%20koneksi%20internet." target="_blank" class="control-btn whatsapp-cta">
+                <a href="https://wa.me/62895630094597?text=Halo%20Aura.Net,%20saya%20tertarik%20berlangganan." target="_blank" class="control-btn whatsapp-cta">
                     <i class="fa-brands fa-whatsapp"></i>
                 </a>
             </div>
@@ -45,40 +43,51 @@
     <!-- Main Content Wrapper -->
     <main class="page-wrapper">
 
-        <!-- Hero Section: Typography & Dynamic Reveal -->
+        <!-- Hero Section dengan State Switcher Interaktif ala Figma Smart Animate -->
         <section id="hero" class="hero-section">
             <div class="hero-container">
-                <div class="hero-text-block reveal-up">
+                <div class="hero-text-block animate-slide-up">
                     <div class="hero-badge">
                         <span class="live-dot"></span> FIBER BACKBONE ENTERPRISE
                     </div>
-                    <h1>Koneksi Tanpa Batas, <br><span class="gradient-headline">Performa Tanpa Kompromi.</span></h1>
-                    <p>Infrastruktur jaringan fiber optic mutakhir dengan latensi rendah, dirancang khusus untuk kestabilan maksimal gaming, streaming, dan produktivitas tanpa FUP.</p>
-                    <div class="hero-actions">
+                    <h1 id="hero-title">Koneksi Tanpa Batas, <br><span class="gradient-headline">Performa Tanpa Kompromi.</span></h1>
+                    <p id="hero-desc">Infrastruktur jaringan fiber optic mutakhir dengan latensi rendah, dirancang khusus untuk kestabilan maksimal gaming, streaming, dan produktivitas tanpa FUP.</p>
+                    
+                    <!-- Variant Selector Buttons (Efek Transisi State Dinamis) -->
+                    <div class="variant-selector-group">
+                        <span class="selector-label">Pilih Profil Jaringan:</span>
+                        <div class="variant-buttons">
+                            <button class="var-btn active" data-variant="cyan" onclick="switchVariant('cyan')">Home Pro</button>
+                            <button class="var-btn" data-variant="magenta" onclick="switchVariant('magenta')">Gaming Ultra</button>
+                            <button class="var-btn" data-variant="violet" onclick="switchVariant('violet')">Business Enterprise</button>
+                        </div>
+                    </div>
+
+                    <div class="hero-actions" style="margin-top: 25px;">
                         <a href="#pricing" class="btn-custom primary ripple-btn">
                             <span>Aktivasi Paket</span> <i class="fa-solid fa-arrow-right-long"></i>
                         </a>
                         <a href="#coverage" class="btn-custom secondary ripple-btn">
-                            <span>Cek Area Lokasi</span> <i class="fa-solid fa-location-crosshairs"></i>
+                            <span>Cek Lokasi Area</span> <i class="fa-solid fa-location-crosshairs"></i>
                         </a>
                     </div>
                 </div>
 
-                <!-- Interactive Holographic Stats Card -->
-                <div class="hero-visual-block reveal-up delay-1">
-                    <div class="holo-card spotlight-card">
+                <!-- Dynamic Showcase Card (Bergeser & Berubah Warna Halus) -->
+                <div class="hero-visual-block animate-slide-up">
+                    <div class="showcase-card spotlight-card">
                         <div class="spotlight-effect"></div>
-                        <div class="holo-top">
+                        <div class="showcase-top">
                             <span class="server-status"><i class="fa-solid fa-circle"></i> NODE SECURE</span>
-                            <span class="server-id">SRV-AURA-01</span>
+                            <span id="card-badge-type" class="badge-type-pill">HOME PRO</span>
                         </div>
-                        <div class="holo-mid">
-                            <div class="stat-number">10 <span>Mbps</span></div>
-                            <p>Kecepatan Simetris Real-Time (Dedicated)</p>
+                        <div class="showcase-mid">
+                            <div id="showcase-speed" class="stat-number">10 <span>Mbps</span></div>
+                            <p id="showcase-desc">Bandwidth Simetris Real-Time Tanpa FUP</p>
                         </div>
-                        <div class="holo-bot">
+                        <div class="showcase-bot">
                             <span><i class="fa-solid fa-ping-pong"></i> Ping: 4ms</span>
-                            <span><i class="fa-solid fa-shield-halved"></i> Unlimited FUP</span>
+                            <span><i class="fa-solid fa-shield-halved"></i> Uptime 99.9%</span>
                         </div>
                     </div>
                 </div>
@@ -87,26 +96,26 @@
 
         <!-- Bento Grid Ecosystem Section -->
         <section id="matrix" class="matrix-section">
-            <div class="section-heading reveal-up">
+            <div class="section-heading">
                 <span class="section-tag">ARSITEKTUR TEKNOLOGI</span>
                 <h2>Ecosystem Jaringan Terintegrasi</h2>
                 <p>Standar layanan modern untuk jaminan kenyamanan transfer data digital.</p>
             </div>
 
             <div class="bento-grid">
-                <div class="bento-cell spotlight-card reveal-up">
+                <div class="bento-cell spotlight-card">
                     <div class="spotlight-effect"></div>
                     <div class="cell-icon"><i class="fa-solid fa-microchip"></i></div>
                     <h3>QoS Traffic Management</h3>
                     <p>Pengaturan bandwidth pintar untuk memprioritaskan kelancaran meeting, gaming, dan video streaming tanpa buffering.</p>
                 </div>
-                <div class="bento-cell spotlight-card reveal-up delay-1">
+                <div class="bento-cell spotlight-card">
                     <div class="spotlight-effect"></div>
                     <div class="cell-icon"><i class="fa-solid fa-bolt"></i></div>
                     <h3>Fiber Optic Pure</h3>
                     <p>Jalur transmisi cahaya optik tahan segala cuaca ekstrem serta bebas dari interferensi elektromagnetik.</p>
                 </div>
-                <div class="bento-cell spotlight-card reveal-up delay-2">
+                <div class="bento-cell spotlight-card">
                     <div class="spotlight-effect"></div>
                     <div class="cell-icon"><i class="fa-solid fa-headset"></i></div>
                     <h3>Rapid Support 24/7</h3>
@@ -117,13 +126,13 @@
 
         <!-- Pricing Section (10Mbps - 150K) -->
         <section id="pricing" class="pricing-section">
-            <div class="section-heading reveal-up">
+            <div class="section-heading">
                 <span class="section-tag">EKSKLUSIF PLAN</span>
                 <h2>Paket Layanan Utama</h2>
                 <p>Satu pilihan terbaik dengan spesifikasi maksimal untuk rumah dan bisnis.</p>
             </div>
 
-            <div class="pricing-wrapper reveal-up">
+            <div class="pricing-wrapper">
                 <div class="pricing-card spotlight-card">
                     <div class="spotlight-effect"></div>
                     <div class="card-badge-top">ULTIMATE VALUE</div>
@@ -140,6 +149,7 @@
                     <ul class="feature-checklist">
                         <li><i class="fa-solid fa-check"></i> Kecepatan Simetris hingga <strong>10 Mbps</strong></li>
                         <li><i class="fa-solid fa-check"></i> <strong>Unlimited Kuota Tanpa FUP</strong></li>
+                        <li><i class="fa-solid fa-check"></i> Free Perangkat ONT & Instalasi</li>
                         <li><i class="fa-solid fa-check"></i> Optimal untuk 3 - 6 Perangkat Sekaligus</li>
                         <li><i class="fa-solid fa-check"></i> Prioritas Support Layanan Teknis 24/7</li>
                     </ul>
@@ -150,9 +160,9 @@
             </div>
         </section>
 
-        <!-- Coverage Verification Section (Strictly Parit Masigi 1 & Jalan Kemuning) -->
+        <!-- Coverage Verification Section (Parit Masigi 1 & Jalan Kemuning) -->
         <section id="coverage" class="coverage-section">
-            <div class="coverage-container spotlight-card reveal-up">
+            <div class="coverage-container spotlight-card">
                 <div class="spotlight-effect"></div>
                 <div class="coverage-header">
                     <span class="section-tag">GEOLOKASI PORT JARINGAN</span>
