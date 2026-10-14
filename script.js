@@ -1,5 +1,5 @@
 /* =========================================================
-   AURA NET — SCRIPT
+   AURA NET v2 — SCRIPT
    Bagian PENGATURAN di bawah ini yang paling sering Anda ubah.
    ========================================================= */
 (() => {
@@ -15,8 +15,12 @@ const CONFIG = {
 /* EDIT: ganti dengan nama desa / kelurahan / perumahan yang benar-benar terjangkau.
    status: 'aktif' = sudah terlayani, 'segera' = rencana perluasan. */
 const COVERAGE = [
-  { name: 'Parit Masigi 1',  status: 'aktif'  },
-  { name: 'Jalan Kemuning',        status: 'segera' }
+  { name: 'Perumahan Griya Asri',  status: 'aktif'  },
+  { name: 'Desa Sukamaju',         status: 'aktif'  },
+  { name: 'Kelurahan Mekarsari',   status: 'aktif'  },
+  { name: 'Kampung Harapan',       status: 'aktif'  },
+  { name: 'Komplek Bumi Indah',    status: 'aktif'  },
+  { name: 'Dusun Sidorejo',        status: 'segera' }
 ];
 
 /* ---------- Util ---------- */
@@ -25,60 +29,23 @@ const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const html = document.documentElement;
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
+const clamp = (v, a, b) => Math.min(Math.max(v, a), b);
 const wa = (text = '') => `https://wa.me/${CONFIG.phoneIntl}` + (text ? `?text=${encodeURIComponent(text)}` : '');
+const esc = s => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 html.classList.add('hx');
 
-/* ---------- Pecah kata judul hero (animasi masuk) ---------- */
-const h1 = $('.hero h1');
-if (h1) {
-  const words = h1.textContent.trim().split(/\s+/);
-  h1.setAttribute('aria-label', words.join(' '));
-  h1.innerHTML = words.map((w, i) => `<span class="w" aria-hidden="true"><span style="--i:${i}">${w}</span></span>`).join(' ');
+/* ---------- Pecah kata (untuk animasi judul) ---------- */
+function split(el, start = 0) {
+  const words = el.textContent.trim().split(/\s+/);
+  el.innerHTML = words.map((w, i) => `<span class="w"><span style="--i:${start + i}">${esc(w)}</span></span>`).join(' ');
+  return words.length;
 }
-
-/* ---------- Tick dial gauge ---------- */
-const ticks = $('#ticks');
-if (ticks) {
-  let s = '';
-  const n = 28;
-  for (let i = 0; i < n; i++) {
-    const a = (135 + i * 270 / (n - 1)) * Math.PI / 180;
-    const r1 = 90, r2 = i % 3 === 0 ? 97 : 94;
-    s += `<line x1="${(100 + Math.cos(a) * r1).toFixed(2)}" y1="${(100 + Math.sin(a) * r1).toFixed(2)}" x2="${(100 + Math.cos(a) * r2).toFixed(2)}" y2="${(100 + Math.sin(a) * r2).toFixed(2)}"/>`;
-  }
-  ticks.innerHTML = s;
-}
-
-/* ---------- Loader -> hero tampil ---------- */
-const gaugeNum = $('#gaugeNum');
-function countUp() {
-  if (!gaugeNum || reduce) return;
-  const start = performance.now() + 1000, dur = 1900;
-  (function tick(now) {
-    const p = Math.min(Math.max((now - start) / dur, 0), 1);
-    gaugeNum.textContent = Math.round(10 * (1 - Math.pow(1 - p, 3)));
-    if (p < 1) requestAnimationFrame(tick);
-  })(performance.now());
-}
-if (gaugeNum && !reduce) gaugeNum.textContent = '0';
-
-let started = false;
-function ready() {
-  if (started) return;
-  started = true;
-  html.classList.add('ready');
-  countUp();
-  setTimeout(() => { const l = $('#loader'); if (l) l.remove(); }, 1300);
-}
-const t0 = performance.now();
-const loaded = new Promise(res => document.readyState === 'complete' ? res() : addEventListener('load', res));
-const fontsOk = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
-Promise.all([loaded, fontsOk]).then(() => {
-  const wait = reduce ? 0 : Math.max(0, 1200 - (performance.now() - t0));
-  setTimeout(ready, wait);
-});
-setTimeout(ready, 3500);
+let wi = 0;
+$$('#h1 [data-split]').forEach(el => { wi += split(el, wi); });
+$$('.split').forEach(el => split(el));
+const wordmark = $('#wordmark');
+if (wordmark) split(wordmark);
 
 /* ---------- Link WhatsApp dengan pesan otomatis ---------- */
 $$('[data-wa]').forEach(a => { a.href = wa(a.dataset.wa); });
@@ -90,219 +57,372 @@ function toast(msg) {
   toastEl.textContent = msg;
   toastEl.classList.add('show');
   clearTimeout(toastT);
-  toastT = setTimeout(() => toastEl.classList.remove('show'), 2400);
+  toastT = setTimeout(() => toastEl.classList.remove('show'), 2600);
 }
 
-/* ---------- Navigasi: scroll, progress, menu mobile ---------- */
-const nav = $('#nav'), prog = $('#progress'), fab = $('#fab'), burger = $('#burger');
-let ticking = false;
-function onScroll() {
-  const y = window.scrollY;
-  nav.classList.toggle('scrolled', y > 24);
-  const max = html.scrollHeight - innerHeight;
-  prog.style.transform = `scaleX(${max > 0 ? Math.min(y / max, 1) : 0})`;
-  fab.classList.toggle('show', y > 500);
-  ticking = false;
+/* ---------- Kata berganti di judul hero ---------- */
+const rws = $$('#rot .rw');
+let ri = 0, rotTimer;
+function nextWord() {
+  if (rws.length < 2) return;
+  const cur = rws[ri];
+  ri = (ri + 1) % rws.length;
+  const nx = rws[ri];
+  cur.classList.remove('on'); cur.classList.add('out');
+  nx.classList.remove('out'); nx.classList.add('on');
+  setTimeout(() => cur.classList.remove('out'), 950);
 }
-addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
-onScroll();
+
+/* ---------- Loader (hitungan persen) -> tirai terbuka ---------- */
+const loadNum = $('#loadNum');
+let started = false;
+function ready() {
+  if (started) return;
+  started = true;
+  html.classList.add('ready');
+  if (!reduce) rotTimer = setInterval(nextWord, 2600);
+  setTimeout(() => { const l = $('#loader'); if (l) l.remove(); }, 1400);
+}
+if (reduce) {
+  ready();
+} else {
+  const t0 = performance.now();
+  let loaded = false, shown = 0;
+  Promise.all([
+    new Promise(r => document.readyState === 'complete' ? r() : addEventListener('load', r)),
+    document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()
+  ]).then(() => { loaded = true; });
+  (function count(now) {
+    if (started) return;
+    const t = Math.min((now - t0) / 1500, 1);
+    const target = loaded ? 100 : Math.min(88, t * 100);
+    shown += (target - shown) * .12;
+    if (loadNum) loadNum.textContent = Math.round(shown);
+    if (loaded && t >= 1 && shown > 99.3) {
+      if (loadNum) loadNum.textContent = '100';
+      setTimeout(ready, 280);
+      return;
+    }
+    requestAnimationFrame(count);
+  })(performance.now());
+  setTimeout(ready, 3800);
+}
+
+/* ---------- Navigasi ---------- */
+const nav = $('#nav'), links = $('#links'), ind = $('#navInd'), burger = $('#burger'), menu = $('#menu');
+const linkEls = $$('a', links);
+let activeLink = null, menuOpen = false;
+
+function moveInd(a) {
+  if (!a) { ind.style.opacity = 0; linkEls.forEach(l => l.classList.remove('hot')); return; }
+  ind.style.opacity = 1;
+  ind.style.width = a.offsetWidth + 'px';
+  ind.style.transform = `translateX(${a.offsetLeft}px)`;
+  linkEls.forEach(l => l.classList.toggle('hot', l === a));
+}
+linkEls.forEach(a => {
+  a.addEventListener('mouseenter', () => moveInd(a));
+  a.addEventListener('focus', () => moveInd(a));
+});
+links.addEventListener('mouseleave', () => moveInd(activeLink));
+addEventListener('resize', () => moveInd(activeLink));
 
 function setMenu(open) {
-  nav.classList.toggle('open', open);
+  menuOpen = open;
+  menu.classList.toggle('open', open);
+  burger.classList.toggle('open', open);
   burger.setAttribute('aria-expanded', String(open));
   burger.setAttribute('aria-label', open ? 'Tutup menu' : 'Buka menu');
   document.body.style.overflow = open ? 'hidden' : '';
+  nav.classList.remove('hide');
 }
-burger.addEventListener('click', () => setMenu(!nav.classList.contains('open')));
-$$('.links a').forEach(a => a.addEventListener('click', () => setMenu(false)));
+burger.addEventListener('click', () => setMenu(!menuOpen));
+$$('a', menu).forEach(a => a.addEventListener('click', () => setMenu(false)));
 addEventListener('keydown', e => { if (e.key === 'Escape') setMenu(false); });
-addEventListener('resize', () => { if (innerWidth > 860) setMenu(false); });
+addEventListener('resize', () => { if (innerWidth > 860 && menuOpen) setMenu(false); });
 
-/* Tandai menu aktif sesuai bagian yang sedang dilihat */
 if ('IntersectionObserver' in window) {
-  const linkMap = new Map($$('.links a[href^="#"]').map(a => [a.getAttribute('href').slice(1), a]));
+  const map = new Map(linkEls.map(a => [a.getAttribute('href').slice(1), a]));
   const navIO = new IntersectionObserver(es => es.forEach(e => {
     if (!e.isIntersecting) return;
-    linkMap.forEach(a => a.removeAttribute('aria-current'));
-    const a = linkMap.get(e.target.id);
-    if (a && !a.classList.contains('btn')) a.setAttribute('aria-current', 'true');
+    activeLink = map.get(e.target.id) || null;
+    moveInd(activeLink);
   }), { rootMargin: '-45% 0px -50% 0px' });
-  ['paket', 'jangkauan', 'pasang', 'faq', 'kontak'].forEach(id => { const el = document.getElementById(id); if (el) navIO.observe(el); });
+  ['paket', 'jangkauan', 'pasang', 'faq'].forEach(id => { const el = document.getElementById(id); if (el) navIO.observe(el); });
+  const heroEl = $('#top');
+  if (heroEl) new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { activeLink = null; moveInd(null); } }), { rootMargin: '-45% 0px -50% 0px' }).observe(heroEl);
 }
 
-/* ---------- Reveal saat scroll ---------- */
-const revealEls = $$('.reveal');
-if ('IntersectionObserver' in window && !reduce) {
-  html.classList.add('rv');
-  const rio = new IntersectionObserver((es, o) => es.forEach(e => {
-    if (e.isIntersecting) { e.target.classList.add('in'); o.unobserve(e.target); }
-  }), { threshold: .12, rootMargin: '0px 0px -6% 0px' });
-  revealEls.forEach(el => rio.observe(el));
-}
+/* ---------- Scroll: progres, tombol, parallax, kartu bertumpuk ---------- */
+const totop = $('#totop'), prg = $('#totopPrg'), fab = $('#fab'), big10 = $('#big10');
+const cards = $$('.scard');
+let lastY = scrollY, ticking = false;
+const CIRC = 131.9;
 
-/* ---------- Hero: spotlight kursor + jaringan partikel ---------- */
-const hero = $('.hero');
-const mouse = { x: -999, y: -999 };
-if (hero && fine && !reduce) {
-  let raf;
-  hero.addEventListener('pointermove', e => {
-    const r = hero.getBoundingClientRect();
-    mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top;
-    cancelAnimationFrame(raf);
-    raf = requestAnimationFrame(() => {
-      hero.style.setProperty('--mx', mouse.x + 'px');
-      hero.style.setProperty('--my', mouse.y + 'px');
-    });
+function stackUpdate() {
+  cards.forEach((c, i) => {
+    if (i === cards.length - 1) return;
+    const next = cards[i + 1];
+    const stickTop = parseFloat(getComputedStyle(next).top) || 0;
+    const d = next.getBoundingClientRect().top - stickTop;
+    const p = clamp(1 - d / c.offsetHeight, 0, 1);
+    c.style.transform = `scale(${(1 - p * .05).toFixed(4)})`;
+    c.style.setProperty('--p', p.toFixed(3));
   });
-  hero.addEventListener('pointerleave', () => { mouse.x = mouse.y = -999; });
 }
-
-(function network() {
-  const c = $('#net');
-  if (!c) return;
-  const ctx = c.getContext('2d');
-  let w = 0, h = 0, pts = [], raf = 0, running = false;
-
-  function size() {
-    const d = Math.min(devicePixelRatio || 1, 2), r = c.getBoundingClientRect();
-    w = r.width; h = r.height;
-    c.width = Math.round(w * d); c.height = Math.round(h * d);
-    ctx.setTransform(d, 0, 0, d, 0, 0);
-    const n = Math.max(18, Math.min(64, Math.round(w * h / 18000)));
-    pts = Array.from({ length: n }, () => ({
-      x: Math.random() * w, y: Math.random() * h,
-      vx: (Math.random() - .5) * .32, vy: (Math.random() - .5) * .32,
-      r: Math.random() * 1.5 + .6
-    }));
+function onScroll() {
+  const y = scrollY, dy = y - lastY;
+  if (!menuOpen) {
+    if (dy > 4 && y > 220) nav.classList.add('hide');
+    else if (dy < -4 || y < 120) nav.classList.remove('hide');
   }
-  function draw(move) {
-    ctx.clearRect(0, 0, w, h);
-    const L = 125;
-    for (let i = 0; i < pts.length; i++) {
-      const p = pts[i];
-      if (move) {
-        p.x += p.vx; p.y += p.vy;
-        if (p.x < 0 || p.x > w) p.vx *= -1;
-        if (p.y < 0 || p.y > h) p.vy *= -1;
-      }
-      for (let j = i + 1; j < pts.length; j++) {
-        const q = pts[j], dx = p.x - q.x, dy = p.y - q.y, d2 = dx * dx + dy * dy;
-        if (d2 < L * L) {
-          ctx.strokeStyle = `rgba(124,108,255,${(1 - Math.sqrt(d2) / L) * .35})`;
-          ctx.lineWidth = 1;
-          ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(q.x, q.y); ctx.stroke();
-        }
-      }
-      const md = Math.hypot(p.x - mouse.x, p.y - mouse.y);
-      if (md < 170) {
-        ctx.strokeStyle = `rgba(77,240,210,${(1 - md / 170) * .6})`;
-        ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(mouse.x, mouse.y); ctx.stroke();
-      }
-      ctx.fillStyle = 'rgba(77,240,210,.75)';
-      ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.2832); ctx.fill();
+  lastY = y;
+  const max = html.scrollHeight - innerHeight;
+  prg.style.strokeDashoffset = (CIRC * (1 - (max > 0 ? clamp(y / max, 0, 1) : 0))).toFixed(2);
+  totop.classList.toggle('show', y > 500);
+  fab.classList.toggle('show', y > 500);
+  if (big10 && !reduce) {
+    const r = big10.getBoundingClientRect();
+    if (r.bottom > -200 && r.top < innerHeight + 200) {
+      const off = r.top + r.height / 2 - innerHeight / 2;
+      big10.style.transform = `translateY(${(-off * .16).toFixed(1)}px)`;
     }
   }
-  function loop() { draw(true); raf = requestAnimationFrame(loop); }
+  if (!reduce) stackUpdate();
+  ticking = false;
+}
+addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
+addEventListener('resize', onScroll);
+onScroll();
+totop.addEventListener('click', () => scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' }));
 
-  size();
-  let rt;
-  addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { size(); if (!running) draw(false); }, 150); });
-
-  if (reduce || !('IntersectionObserver' in window)) { draw(false); return; }
-  new IntersectionObserver(es => es.forEach(e => {
-    if (e.isIntersecting && !running) { running = true; loop(); }
-    else if (!e.isIntersecting && running) { running = false; cancelAnimationFrame(raf); }
-  })).observe(c);
-})();
-
-/* ---------- Kartu paket: efek miring 3D ---------- */
-const pkg = $('#pkg');
-if (pkg && fine && !reduce) {
-  pkg.addEventListener('pointermove', e => {
-    const r = pkg.getBoundingClientRect();
-    const px = (e.clientX - r.left) / r.width - .5, py = (e.clientY - r.top) / r.height - .5;
-    pkg.style.transform = `rotateY(${px * 8}deg) rotateX(${-py * 8}deg)`;
-    pkg.style.setProperty('--gx', (px + .5) * 100 + '%');
-    pkg.style.setProperty('--gy', (py + .5) * 100 + '%');
-  });
-  pkg.addEventListener('pointerleave', () => { pkg.style.transform = ''; });
+/* ---------- Muncul saat scroll ---------- */
+const price = $('[data-count]');
+if (price && !reduce) price.textContent = '0';
+function countTo(el) {
+  const to = +el.dataset.count, dur = 1700, s = performance.now();
+  (function f(n) {
+    const p = Math.min((n - s) / dur, 1);
+    el.textContent = Math.round(to * (1 - Math.pow(1 - p, 4))).toLocaleString('id-ID');
+    if (p < 1) requestAnimationFrame(f);
+  })(s);
 }
 
-/* ---------- Jangkauan: peta ilustrasi + pengecek area ---------- */
-(function coverage() {
-  const mapEl = $('#map'), listEl = $('#areaList'), form = $('#checker'), input = $('#areaInput'), result = $('#areaResult');
-  if (!mapEl || !listEl) return;
+/* Odometer nomor telepon */
+const odo = $('#odo');
+if (odo) {
+  let k = 0;
+  odo.innerHTML = [...CONFIG.phoneDisplay].map(ch => {
+    if (/\d/.test(ch)) {
+      const col = Array.from({ length: 10 }, (_, n) => `<i>${n}</i>`).join('');
+      return `<span class="d" aria-hidden="true"><span class="col" style="--v:${ch};--k:${k++}">${col}</span></span>`;
+    }
+    return `<span class="sep" aria-hidden="true">${ch}</span>`;
+  }).join('');
+}
 
-  const W = 480, H = 420, cx = 240, cy = 210, n = COVERAGE.length;
-  const pos = COVERAGE.map((a, i) => {
-    const ang = (-90 + i * 360 / n + (i % 2 ? 14 : -10)) * Math.PI / 180;
-    const rx = i % 2 ? 170 : 118, ry = i % 2 ? 150 : 102;
-    return { x: cx + Math.cos(ang) * rx, y: cy + Math.sin(ang) * ry };
+const watch = $$('.reveal, .split, .scard, #wordmark');
+if ('IntersectionObserver' in window && !reduce) {
+  html.classList.add('rv');
+  const io = new IntersectionObserver((es, o) => es.forEach(e => {
+    if (!e.isIntersecting) return;
+    e.target.classList.add('in');
+    o.unobserve(e.target);
+  }), { threshold: .14, rootMargin: '0px 0px -6% 0px' });
+  watch.forEach(el => io.observe(el));
+
+  if (price) new IntersectionObserver((es, o) => es.forEach(e => { if (e.isIntersecting) { countTo(price); o.unobserve(e.target); } }), { threshold: .5 }).observe(price);
+  if (odo) new IntersectionObserver((es, o) => es.forEach(e => { if (e.isIntersecting) { odo.classList.add('on'); o.unobserve(e.target); } }), { threshold: .6 }).observe(odo);
+} else {
+  watch.forEach(el => el.classList.add('in'));
+  if (odo) odo.classList.add('on');
+}
+
+/* ---------- Equalizer (tile kecepatan) ---------- */
+const eq = $('#eq');
+if (eq) eq.innerHTML = Array.from({ length: 30 }, (_, i) => `<i style="--i:${i}"></i>`).join('');
+
+/* ---------- Marquee yang bereaksi pada kecepatan scroll ---------- */
+const mqEl = $('#marquee'), track = $('#mqTrack');
+let mqW = 0, mqX = 0, mqVel = 0, mqSkew = 0, mqLastY = scrollY, mqIn = true;
+function mqBuild() {
+  if (!track) return;
+  $$('.clone', track).forEach(n => n.remove());
+  const group = track.firstElementChild;
+  mqW = group.offsetWidth;
+  const need = Math.ceil((innerWidth * 1.3) / Math.max(mqW, 1)) + 1;
+  for (let i = 0; i < need; i++) { const c = group.cloneNode(true); c.classList.add('clone'); track.append(c); }
+}
+mqBuild();
+addEventListener('resize', mqBuild);
+if (mqEl && 'IntersectionObserver' in window) new IntersectionObserver(es => es.forEach(e => { mqIn = e.isIntersecting; })).observe(mqEl);
+
+/* ---------- Kursor, parallax hero, magnet, loop utama ---------- */
+const cur = $('#cur');
+const hero = $('.hero');
+let tx = -100, ty = -100, rx = -100, ry = -100, curShown = false;
+let hx = 0, hy = 0, hpx = 0, hpy = 0;
+
+if (fine && !reduce) {
+  const dot = $('.cur-dot', cur), ring = $('.cur-ring', cur);
+  addEventListener('pointermove', e => {
+    tx = e.clientX; ty = e.clientY;
+    if (!curShown) { curShown = true; rx = tx; ry = ty; cur.classList.add('show'); }
+    dot.style.transform = `translate(${tx}px,${ty}px)`;
+  }, { passive: true });
+  document.addEventListener('pointerover', e => {
+    cur.classList.toggle('hover', !!e.target.closest('a,button,input,textarea,.blip,.area,.qa'));
   });
-  const esc = s => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  addEventListener('pointerdown', () => cur.classList.add('down'));
+  addEventListener('pointerup', () => cur.classList.remove('down'));
+  document.addEventListener('pointerleave', () => cur.classList.remove('show'));
+  document.addEventListener('pointerenter', () => { if (curShown) cur.classList.add('show'); });
+  cur._ring = ring;
 
-  const links = pos.map((p, i) => `<line class="m-link ${COVERAGE[i].status === 'segera' ? 'soon' : ''}" x1="${cx}" y1="${cy}" x2="${p.x.toFixed(1)}" y2="${p.y.toFixed(1)}"/>`).join('');
-  const nodes = pos.map((p, i) => `<g class="m-node ${COVERAGE[i].status === 'segera' ? 'soon' : ''}" data-i="${i}" tabindex="0" role="button" aria-label="${esc(COVERAGE[i].name)}" transform="translate(${p.x.toFixed(1)} ${p.y.toFixed(1)})"><circle class="m-halo" r="13"/><circle class="m-core" r="6"/></g>`).join('');
+  if (hero) hero.addEventListener('pointermove', e => {
+    hx = (e.clientX / innerWidth - .5) * 2;
+    hy = (e.clientY / innerHeight - .5) * 2;
+  });
+  if (hero) hero.addEventListener('pointerleave', () => { hx = 0; hy = 0; });
 
-  mapEl.innerHTML = `
-  <svg viewBox="0 0 ${W} ${H}" role="group" aria-label="Peta ilustrasi jangkauan Aura Net">
-    <defs>
-      <pattern id="mgrid" width="30" height="30" patternUnits="userSpaceOnUse"><path d="M30 0H0V30" fill="none" stroke="rgba(255,255,255,.045)"/></pattern>
-      <radialGradient id="mglow"><stop offset="0" stop-color="#4DF0D2" stop-opacity=".3"/><stop offset=".6" stop-color="#7C6CFF" stop-opacity=".1"/><stop offset="1" stop-color="#7C6CFF" stop-opacity="0"/></radialGradient>
-    </defs>
-    <rect width="${W}" height="${H}" fill="url(#mgrid)"/>
-    <g class="m-roads">
-      <path d="M-10 330 C 90 290, 150 360, 250 320 S 420 280, 490 310"/>
-      <path d="M120 -10 C 150 90, 90 160, 130 260 S 170 380, 150 430"/>
-      <path d="M-10 120 C 100 150, 200 90, 300 130 S 430 170, 490 120"/>
-      <path d="M360 -10 C 330 80, 400 150, 370 250 S 330 380, 380 430"/>
-    </g>
-    <circle class="m-aura" cx="${cx}" cy="${cy}" r="200" fill="url(#mglow)"/>
-    <g>${links}</g>
-    <g transform="translate(${cx} ${cy})">
-      <circle class="m-hub-ring" r="14" style="animation-delay:0s"/>
-      <circle class="m-hub-ring" r="14" style="animation-delay:1.2s"/>
-      <circle class="m-hub-ring" r="14" style="animation-delay:2.4s"/>
-      <circle r="12" fill="url(#ag)"/>
-      <circle r="4.5" fill="#070B1F"/>
-      <text class="m-hubtxt" y="34">Aura Net</text>
-    </g>
-    ${nodes}
-    <g class="m-label" id="mLabel" style="transform:translate(-999px,-999px)"><rect height="30" rx="15"/><text x="14" y="20"></text></g>
-  </svg>`;
+  /* tombol magnet */
+  const mags = $$('.mag');
+  let mt = false, mev = null;
+  addEventListener('pointermove', e => {
+    mev = e;
+    if (mt) return;
+    mt = true;
+    requestAnimationFrame(() => {
+      mt = false;
+      mags.forEach(m => {
+        const r = m.getBoundingClientRect();
+        if (r.bottom < 0 || r.top > innerHeight) return;
+        const dx = mev.clientX - (r.left + r.width / 2), dy = mev.clientY - (r.top + r.height / 2);
+        const R = Math.max(r.width, r.height) * .75;
+        if (Math.hypot(dx, dy) < R) m.style.transform = `translate(${(dx * .26).toFixed(1)}px,${(dy * .38).toFixed(1)}px)`;
+        else if (m.style.transform) m.style.transform = '';
+      });
+    });
+  }, { passive: true });
+}
+
+let lastT = performance.now();
+function loop(now) {
+  const dt = Math.min((now - lastT) / 16.667, 3);
+  lastT = now;
+
+  if (cur && curShown && cur._ring) {
+    rx += (tx - rx) * .2 * dt; ry += (ty - ry) * .2 * dt;
+    cur._ring.style.transform = `translate(${rx.toFixed(1)}px,${ry.toFixed(1)}px)`;
+  }
+  if (hero && fine) {
+    hpx += (hx - hpx) * .08 * dt; hpy += (hy - hpy) * .08 * dt;
+    if (Math.abs(hpx - hx) > .001 || Math.abs(hpy - hy) > .001) {
+      hero.style.setProperty('--px', hpx.toFixed(3));
+      hero.style.setProperty('--py', hpy.toFixed(3));
+    }
+  }
+  if (track && mqIn && !reduce) {
+    const dy = scrollY - mqLastY; mqLastY = scrollY;
+    mqVel += (dy - mqVel) * .12;
+    mqSkew += (clamp(mqVel * .35, -9, 9) - mqSkew) * .15;
+    mqX -= (.8 + Math.min(Math.abs(mqVel) * .4, 16)) * dt;
+    if (mqX <= -mqW) mqX += mqW;
+    track.style.transform = `translate3d(${mqX.toFixed(1)}px,0,0)`;
+    mqEl.style.transform = `rotate(-2.2deg) skewX(${(-mqSkew).toFixed(2)}deg)`;
+  }
+  requestAnimationFrame(loop);
+}
+if (!reduce) requestAnimationFrame(loop);
+
+/* ---------- Tiket paket: miring 3D + kilau ---------- */
+const ticket = $('#ticket');
+if (ticket && fine && !reduce) {
+  ticket.addEventListener('pointermove', e => {
+    const r = ticket.getBoundingClientRect();
+    const px = (e.clientX - r.left) / r.width - .5, py = (e.clientY - r.top) / r.height - .5;
+    ticket.style.transform = `rotateY(${(px * 7).toFixed(2)}deg) rotateX(${(-py * 7).toFixed(2)}deg)`;
+    ticket.style.setProperty('--gx', (px + .5) * 100 + '%');
+    ticket.style.setProperty('--gy', (py + .5) * 100 + '%');
+  });
+  ticket.addEventListener('pointerleave', () => { ticket.style.transform = ''; });
+}
+
+/* ---------- Confetti ---------- */
+const cv = $('#confetti'), cctx = cv.getContext('2d');
+let parts = [], crun = false;
+function burst(x, y) {
+  if (reduce) return;
+  cv.width = innerWidth; cv.height = innerHeight;
+  const colors = ['#2B33FF', '#FF6A2B', '#7CF2C9', '#FF9BD2', '#F7F7FF', '#12101A'];
+  for (let i = 0; i < 56; i++) {
+    const a = Math.random() * Math.PI * 2, s = 4 + Math.random() * 9;
+    parts.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 6, r: Math.random() * 6.28, vr: (Math.random() - .5) * .4, w: 6 + Math.random() * 7, h: 4 + Math.random() * 5, c: colors[i % colors.length], life: 1 });
+  }
+  if (!crun) { crun = true; requestAnimationFrame(cstep); }
+}
+function cstep() {
+  cctx.clearRect(0, 0, cv.width, cv.height);
+  parts = parts.filter(p => p.life > 0);
+  parts.forEach(p => {
+    p.vy += .35; p.vx *= .985; p.x += p.vx; p.y += p.vy; p.r += p.vr; p.life -= .012;
+    cctx.save(); cctx.globalAlpha = Math.max(p.life, 0); cctx.translate(p.x, p.y); cctx.rotate(p.r);
+    cctx.fillStyle = p.c; cctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); cctx.restore();
+  });
+  if (parts.length) requestAnimationFrame(cstep);
+  else { crun = false; cctx.clearRect(0, 0, cv.width, cv.height); }
+}
+$$('[data-confetti]').forEach(b => b.addEventListener('click', e => burst(e.clientX, e.clientY)));
+
+/* ---------- Jangkauan: radar + pengecek area ---------- */
+(function coverage() {
+  const radar = $('#radar'), listEl = $('#areaList'), form = $('#checker'), input = $('#areaInput'), result = $('#areaResult');
+  if (!radar || !listEl) return;
+
+  const n = COVERAGE.length, T = 6;
+  const pts = COVERAGE.map((a, i) => {
+    const phi = ((i * 360 / n) + (i % 2 ? 20 : -14) + 360) % 360;
+    const rr = i % 2 ? .74 : .44, rad = phi * Math.PI / 180;
+    return { phi, x: 50 + Math.sin(rad) * rr * 50, y: 50 - Math.cos(rad) * rr * 50 };
+  });
+
+  pts.forEach((p, i) => {
+    const a = COVERAGE[i], soon = a.status === 'segera';
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'blip' + (soon ? ' soon' : '') + (p.y < 22 ? ' below' : '');
+    b.dataset.i = i;
+    b.style.cssText = `--x:${p.x.toFixed(2)}%;--y:${p.y.toFixed(2)}%;--dl:${(p.phi / 360 * T).toFixed(2)}s`;
+    b.setAttribute('aria-label', a.name + (soon ? ' (segera)' : ''));
+    b.innerHTML = `<i></i><span class="blip-label">${esc(a.name)}${soon ? ' (segera)' : ''}</span>`;
+    radar.append(b);
+  });
 
   listEl.innerHTML = COVERAGE.map((a, i) =>
     `<li><button class="area ${a.status === 'segera' ? 'soon' : ''}" type="button" data-i="${i}" aria-pressed="false"><span class="dot"></span><span>${esc(a.name)}</span>${a.status === 'segera' ? '<span class="soon-tag">Segera</span>' : ''}</button></li>`
   ).join('');
 
-  const lbl = $('#mLabel', mapEl), lblText = $('text', lbl), lblRect = $('rect', lbl);
-  const nodeEls = $$('.m-node', mapEl), areaBtns = $$('.area', listEl);
-  let active = -1;
+  const blips = $$('.blip', radar), areaBtns = $$('.area', listEl);
 
   function setActive(i) {
-    active = i;
-    nodeEls.forEach(g => g.classList.toggle('on', +g.dataset.i === i));
+    blips.forEach(b => b.classList.toggle('on', +b.dataset.i === i));
     areaBtns.forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.i === i)));
-    if (i < 0) return;
-    const a = COVERAGE[i], p = pos[i];
-    lblText.textContent = a.name + (a.status === 'segera' ? ' (segera)' : '');
-    const wTxt = lblText.getComputedTextLength() || lblText.textContent.length * 7.6;
-    const w = Math.ceil(wTxt) + 28;
-    lblRect.setAttribute('width', w);
-    const x = Math.min(Math.max(p.x - w / 2, 8), W - 8 - w);
-    let y = p.y - 48; if (y < 8) y = p.y + 24;
-    lbl.style.transform = `translate(${x}px,${y}px)`;
+    const b = blips[i];
+    if (!b) return;
+    const label = $('.blip-label', b);
+    label.style.setProperty('--sx', '0px');
+    requestAnimationFrame(() => {
+      const wr = radar.getBoundingClientRect(), lr = label.getBoundingClientRect();
+      let shift = 0;
+      if (lr.left < wr.left + 6) shift = wr.left + 6 - lr.left;
+      else if (lr.right > wr.right - 6) shift = wr.right - 6 - lr.right;
+      label.style.setProperty('--sx', shift.toFixed(1) + 'px');
+    });
   }
-
   areaBtns.forEach(b => b.addEventListener('click', () => setActive(+b.dataset.i)));
-  nodeEls.forEach(g => {
-    g.addEventListener('click', () => setActive(+g.dataset.i));
-    g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setActive(+g.dataset.i); } });
-  });
+  blips.forEach(b => b.addEventListener('click', () => setActive(+b.dataset.i)));
   setActive(0);
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => setActive(active));
 
-  /* Pengecek area */
   const norm = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
   const GENERIC = new Set(['desa', 'kelurahan', 'perumahan', 'komplek', 'kompleks', 'kampung', 'dusun', 'jalan', 'blok', 'kecamatan', 'kota', 'kabupaten']);
   const keyWords = s => norm(s).split(' ').filter(w => w.length >= 4 && !GENERIC.has(w));
@@ -342,18 +462,7 @@ if (pkg && fine && !reduce) {
   });
 })();
 
-/* ---------- Cara pasang: garis progres ---------- */
-const stepEls = $$('#steps li');
-if ('IntersectionObserver' in window && !reduce) {
-  const sio = new IntersectionObserver(es => es.forEach(e => {
-    if (e.isIntersecting) { e.target.classList.add('on'); sio.unobserve(e.target); }
-  }), { rootMargin: '0px 0px -20% 0px', threshold: .2 });
-  stepEls.forEach(li => sio.observe(li));
-} else {
-  stepEls.forEach(li => li.classList.add('on'));
-}
-
-/* ---------- FAQ accordion ---------- */
+/* ---------- FAQ ---------- */
 const qas = $$('.qa');
 qas.forEach(q => {
   const b = $('button', q);
@@ -400,6 +509,8 @@ if (order) {
       'Alamat pemasangan: ' + order.elements.alamat.value.trim() + '\n' +
       'Paket: 10 Mbps (Rp150.000/bulan)\n\n' +
       'Mohon info jadwal survei. Terima kasih.';
+    const sb = $('button[type="submit"]', order).getBoundingClientRect();
+    burst(sb.left + sb.width / 2, sb.top + sb.height / 2);
     window.open(wa(text), '_blank', 'noopener');
     toast('Membuka WhatsApp');
   });
