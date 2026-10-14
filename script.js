@@ -15,12 +15,8 @@ const CONFIG = {
 /* EDIT: ganti dengan nama desa / kelurahan / perumahan yang benar-benar terjangkau.
    status: 'aktif' = sudah terlayani, 'segera' = rencana perluasan. */
 const COVERAGE = [
-  { name: 'Perumahan Griya Asri',  status: 'aktif'  },
-  { name: 'Desa Sukamaju',         status: 'aktif'  },
-  { name: 'Kelurahan Mekarsari',   status: 'aktif'  },
-  { name: 'Kampung Harapan',       status: 'aktif'  },
-  { name: 'Komplek Bumi Indah',    status: 'aktif'  },
-  { name: 'Dusun Sidorejo',        status: 'segera' }
+  { name: 'Parit Masigi 1',  status: 'aktif'  },
+  { name: 'Jalan Kemuning',        status: 'segera' }
 ];
 
 /* ---------- Util ---------- */
