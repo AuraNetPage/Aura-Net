@@ -1,5 +1,5 @@
 /* =========================================================
-   AURA NET v2 — SCRIPT
+   AURA NET v3 — SCRIPT
    Bagian PENGATURAN di bawah ini yang paling sering Anda ubah.
    ========================================================= */
 (() => {
@@ -33,20 +33,6 @@ const clamp = (v, a, b) => Math.min(Math.max(v, a), b);
 const wa = (text = '') => `https://wa.me/${CONFIG.phoneIntl}` + (text ? `?text=${encodeURIComponent(text)}` : '');
 const esc = s => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-html.classList.add('hx');
-
-/* ---------- Pecah kata (untuk animasi judul) ---------- */
-function split(el, start = 0) {
-  const words = el.textContent.trim().split(/\s+/);
-  el.innerHTML = words.map((w, i) => `<span class="w"><span style="--i:${start + i}">${esc(w)}</span></span>`).join(' ');
-  return words.length;
-}
-let wi = 0;
-$$('#h1 [data-split]').forEach(el => { wi += split(el, wi); });
-$$('.split').forEach(el => split(el));
-const wordmark = $('#wordmark');
-if (wordmark) split(wordmark);
-
 /* ---------- Link WhatsApp dengan pesan otomatis ---------- */
 $$('[data-wa]').forEach(a => { a.href = wa(a.dataset.wa); });
 
@@ -60,369 +46,238 @@ function toast(msg) {
   toastT = setTimeout(() => toastEl.classList.remove('show'), 2600);
 }
 
-/* ---------- Kata berganti di judul hero ---------- */
-const rws = $$('#rot .rw');
-let ri = 0, rotTimer;
-function nextWord() {
-  if (rws.length < 2) return;
-  const cur = rws[ri];
-  ri = (ri + 1) % rws.length;
-  const nx = rws[ri];
-  cur.classList.remove('on'); cur.classList.add('out');
-  nx.classList.remove('out'); nx.classList.add('on');
-  setTimeout(() => cur.classList.remove('out'), 950);
-}
-
-/* ---------- Loader (hitungan persen) -> tirai terbuka ---------- */
-const loadNum = $('#loadNum');
-let started = false;
-function ready() {
-  if (started) return;
-  started = true;
-  html.classList.add('ready');
-  if (!reduce) rotTimer = setInterval(nextWord, 2600);
-  setTimeout(() => { const l = $('#loader'); if (l) l.remove(); }, 1400);
-}
-if (reduce) {
-  ready();
-} else {
-  const t0 = performance.now();
-  let loaded = false, shown = 0;
-  Promise.all([
-    new Promise(r => document.readyState === 'complete' ? r() : addEventListener('load', r)),
-    document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()
-  ]).then(() => { loaded = true; });
-  (function count(now) {
-    if (started) return;
-    const t = Math.min((now - t0) / 1500, 1);
-    const target = loaded ? 100 : Math.min(88, t * 100);
-    shown += (target - shown) * .12;
-    if (loadNum) loadNum.textContent = Math.round(shown);
-    if (loaded && t >= 1 && shown > 99.3) {
-      if (loadNum) loadNum.textContent = '100';
-      setTimeout(ready, 280);
-      return;
-    }
-    requestAnimationFrame(count);
-  })(performance.now());
-  setTimeout(ready, 3800);
-}
-
 /* ---------- Navigasi ---------- */
-const nav = $('#nav'), links = $('#links'), ind = $('#navInd'), burger = $('#burger'), menu = $('#menu');
-const linkEls = $$('a', links);
-let activeLink = null, menuOpen = false;
-
-function moveInd(a) {
-  if (!a) { ind.style.opacity = 0; linkEls.forEach(l => l.classList.remove('hot')); return; }
-  ind.style.opacity = 1;
-  ind.style.width = a.offsetWidth + 'px';
-  ind.style.transform = `translateX(${a.offsetLeft}px)`;
-  linkEls.forEach(l => l.classList.toggle('hot', l === a));
-}
-linkEls.forEach(a => {
-  a.addEventListener('mouseenter', () => moveInd(a));
-  a.addEventListener('focus', () => moveInd(a));
-});
-links.addEventListener('mouseleave', () => moveInd(activeLink));
-addEventListener('resize', () => moveInd(activeLink));
-
-function setMenu(open) {
-  menuOpen = open;
-  menu.classList.toggle('open', open);
-  burger.classList.toggle('open', open);
-  burger.setAttribute('aria-expanded', String(open));
-  burger.setAttribute('aria-label', open ? 'Tutup menu' : 'Buka menu');
-  document.body.style.overflow = open ? 'hidden' : '';
-  nav.classList.remove('hide');
-}
-burger.addEventListener('click', () => setMenu(!menuOpen));
-$$('a', menu).forEach(a => a.addEventListener('click', () => setMenu(false)));
-addEventListener('keydown', e => { if (e.key === 'Escape') setMenu(false); });
-addEventListener('resize', () => { if (innerWidth > 860 && menuOpen) setMenu(false); });
-
-if ('IntersectionObserver' in window) {
-  const map = new Map(linkEls.map(a => [a.getAttribute('href').slice(1), a]));
-  const navIO = new IntersectionObserver(es => es.forEach(e => {
-    if (!e.isIntersecting) return;
-    activeLink = map.get(e.target.id) || null;
-    moveInd(activeLink);
-  }), { rootMargin: '-45% 0px -50% 0px' });
-  ['paket', 'jangkauan', 'pasang', 'faq'].forEach(id => { const el = document.getElementById(id); if (el) navIO.observe(el); });
-  const heroEl = $('#top');
-  if (heroEl) new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { activeLink = null; moveInd(null); } }), { rootMargin: '-45% 0px -50% 0px' }).observe(heroEl);
-}
-
-/* ---------- Scroll: progres, tombol, parallax, kartu bertumpuk ---------- */
-const totop = $('#totop'), prg = $('#totopPrg'), fab = $('#fab'), big10 = $('#big10');
-const cards = $$('.scard');
-let lastY = scrollY, ticking = false;
-const CIRC = 131.9;
-
-function stackUpdate() {
-  cards.forEach((c, i) => {
-    if (i === cards.length - 1) return;
-    const next = cards[i + 1];
-    const stickTop = parseFloat(getComputedStyle(next).top) || 0;
-    const d = next.getBoundingClientRect().top - stickTop;
-    const p = clamp(1 - d / c.offsetHeight, 0, 1);
-    c.style.transform = `scale(${(1 - p * .05).toFixed(4)})`;
-    c.style.setProperty('--p', p.toFixed(3));
-  });
-}
+const nav = $('#nav'), burger = $('#burger'), prog = $('#progress'), fab = $('#fab');
+let ticking = false;
 function onScroll() {
-  const y = scrollY, dy = y - lastY;
-  if (!menuOpen) {
-    if (dy > 4 && y > 220) nav.classList.add('hide');
-    else if (dy < -4 || y < 120) nav.classList.remove('hide');
-  }
-  lastY = y;
+  const y = scrollY;
+  nav.classList.toggle('scrolled', y > 20);
   const max = html.scrollHeight - innerHeight;
-  prg.style.strokeDashoffset = (CIRC * (1 - (max > 0 ? clamp(y / max, 0, 1) : 0))).toFixed(2);
-  totop.classList.toggle('show', y > 500);
+  prog.style.transform = `scaleX(${max > 0 ? clamp(y / max, 0, 1) : 0})`;
   fab.classList.toggle('show', y > 500);
-  if (big10 && !reduce) {
-    const r = big10.getBoundingClientRect();
-    if (r.bottom > -200 && r.top < innerHeight + 200) {
-      const off = r.top + r.height / 2 - innerHeight / 2;
-      big10.style.transform = `translateY(${(-off * .16).toFixed(1)}px)`;
-    }
-  }
-  if (!reduce) stackUpdate();
+  journeyUpdate();
   ticking = false;
 }
 addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
-addEventListener('resize', onScroll);
-onScroll();
-totop.addEventListener('click', () => scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' }));
 
-/* ---------- Muncul saat scroll ---------- */
-const price = $('[data-count]');
+function setMenu(open) {
+  nav.classList.toggle('open', open);
+  burger.setAttribute('aria-expanded', String(open));
+  burger.setAttribute('aria-label', open ? 'Tutup menu' : 'Buka menu');
+}
+burger.addEventListener('click', () => setMenu(!nav.classList.contains('open')));
+$$('.mnav a').forEach(a => a.addEventListener('click', () => setMenu(false)));
+addEventListener('keydown', e => { if (e.key === 'Escape') setMenu(false); });
+addEventListener('resize', () => { if (innerWidth > 860) setMenu(false); });
+document.addEventListener('click', e => { if (nav.classList.contains('open') && !e.target.closest('.nav')) setMenu(false); });
+
+if ('IntersectionObserver' in window) {
+  const navLinks = $$('.links a[href^="#"], .mnav a[href^="#"]');
+  const spy = new IntersectionObserver(es => es.forEach(e => {
+    if (!e.isIntersecting) return;
+    navLinks.forEach(a => {
+      const on = a.getAttribute('href') === '#' + e.target.id && !a.classList.contains('btn');
+      if (on) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current');
+    });
+  }), { rootMargin: '-45% 0px -50% 0px' });
+  ['paket', 'jangkauan', 'pasang', 'faq'].forEach(id => { const el = document.getElementById(id); if (el) spy.observe(el); });
+}
+
+/* ---------- Muncul saat scroll + hitungan harga ---------- */
+const price = $('#priceNum');
 if (price && !reduce) price.textContent = '0';
 function countTo(el) {
-  const to = +el.dataset.count, dur = 1700, s = performance.now();
+  const to = +el.dataset.count, dur = 1600, s = performance.now();
   (function f(n) {
     const p = Math.min((n - s) / dur, 1);
     el.textContent = Math.round(to * (1 - Math.pow(1 - p, 4))).toLocaleString('id-ID');
     if (p < 1) requestAnimationFrame(f);
   })(s);
 }
-
-/* Odometer nomor telepon */
-const odo = $('#odo');
-if (odo) {
-  let k = 0;
-  odo.innerHTML = [...CONFIG.phoneDisplay].map(ch => {
-    if (/\d/.test(ch)) {
-      const col = Array.from({ length: 10 }, (_, n) => `<i>${n}</i>`).join('');
-      return `<span class="d" aria-hidden="true"><span class="col" style="--v:${ch};--k:${k++}">${col}</span></span>`;
-    }
-    return `<span class="sep" aria-hidden="true">${ch}</span>`;
-  }).join('');
-}
-
-const watch = $$('.reveal, .split, .scard, #wordmark');
 if ('IntersectionObserver' in window && !reduce) {
   html.classList.add('rv');
   const io = new IntersectionObserver((es, o) => es.forEach(e => {
     if (!e.isIntersecting) return;
     e.target.classList.add('in');
     o.unobserve(e.target);
-  }), { threshold: .14, rootMargin: '0px 0px -6% 0px' });
-  watch.forEach(el => io.observe(el));
-
-  if (price) new IntersectionObserver((es, o) => es.forEach(e => { if (e.isIntersecting) { countTo(price); o.unobserve(e.target); } }), { threshold: .5 }).observe(price);
-  if (odo) new IntersectionObserver((es, o) => es.forEach(e => { if (e.isIntersecting) { odo.classList.add('on'); o.unobserve(e.target); } }), { threshold: .6 }).observe(odo);
-} else {
-  watch.forEach(el => el.classList.add('in'));
-  if (odo) odo.classList.add('on');
+  }), { threshold: .12, rootMargin: '0px 0px -6% 0px' });
+  $$('.reveal').forEach(el => io.observe(el));
+  if (price) new IntersectionObserver((es, o) => es.forEach(e => { if (e.isIntersecting) { countTo(price); o.unobserve(e.target); } }), { threshold: .6 }).observe(price);
 }
 
-/* ---------- Equalizer (tile kecepatan) ---------- */
-const eq = $('#eq');
-if (eq) eq.innerHTML = Array.from({ length: 30 }, (_, i) => `<i style="--i:${i}"></i>`).join('');
-
-/* ---------- Marquee yang bereaksi pada kecepatan scroll ---------- */
-const mqEl = $('#marquee'), track = $('#mqTrack');
-let mqW = 0, mqX = 0, mqVel = 0, mqSkew = 0, mqLastY = scrollY, mqIn = true;
-function mqBuild() {
-  if (!track) return;
-  $$('.clone', track).forEach(n => n.remove());
-  const group = track.firstElementChild;
-  mqW = group.offsetWidth;
-  const need = Math.ceil((innerWidth * 1.3) / Math.max(mqW, 1)) + 1;
-  for (let i = 0; i < need; i++) { const c = group.cloneNode(true); c.classList.add('clone'); track.append(c); }
-}
-mqBuild();
-addEventListener('resize', mqBuild);
-if (mqEl && 'IntersectionObserver' in window) new IntersectionObserver(es => es.forEach(e => { mqIn = e.isIntersecting; })).observe(mqEl);
-
-/* ---------- Kursor, parallax hero, magnet, loop utama ---------- */
-const cur = $('#cur');
-const hero = $('.hero');
-let tx = -100, ty = -100, rx = -100, ry = -100, curShown = false;
-let hx = 0, hy = 0, hpx = 0, hpy = 0;
-
-if (fine && !reduce) {
-  const dot = $('.cur-dot', cur), ring = $('.cur-ring', cur);
-  addEventListener('pointermove', e => {
-    tx = e.clientX; ty = e.clientY;
-    if (!curShown) { curShown = true; rx = tx; ry = ty; cur.classList.add('show'); }
-    dot.style.transform = `translate(${tx}px,${ty}px)`;
+/* ---------- Cahaya kartu mengikuti kursor ---------- */
+if (fine) {
+  document.addEventListener('pointermove', e => {
+    const t = e.target.closest && e.target.closest('.spot');
+    if (!t) return;
+    const r = t.getBoundingClientRect();
+    t.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+    t.style.setProperty('--my', (e.clientY - r.top) + 'px');
   }, { passive: true });
-  document.addEventListener('pointerover', e => {
-    cur.classList.toggle('hover', !!e.target.closest('a,button,input,textarea,.blip,.area,.qa'));
-  });
-  addEventListener('pointerdown', () => cur.classList.add('down'));
-  addEventListener('pointerup', () => cur.classList.remove('down'));
-  document.addEventListener('pointerleave', () => cur.classList.remove('show'));
-  document.addEventListener('pointerenter', () => { if (curShown) cur.classList.add('show'); });
-  cur._ring = ring;
+}
 
-  if (hero) hero.addEventListener('pointermove', e => {
-    hx = (e.clientX / innerWidth - .5) * 2;
-    hy = (e.clientY / innerHeight - .5) * 2;
+/* ---------- Hero: miring halus mengikuti kursor ---------- */
+const hero = $('.hero'), heroUi = $('#heroUi');
+if (hero && heroUi && fine && !reduce) {
+  let tx = 0, ty = 0, cx = 0, cy = 0, running = false;
+  const step = () => {
+    cx += (tx - cx) * .1; cy += (ty - cy) * .1;
+    heroUi.style.setProperty('--px', cx.toFixed(3));
+    heroUi.style.setProperty('--py', cy.toFixed(3));
+    if (Math.abs(tx - cx) > .002 || Math.abs(ty - cy) > .002) requestAnimationFrame(step);
+    else running = false;
+  };
+  hero.addEventListener('pointermove', e => {
+    const r = hero.getBoundingClientRect();
+    tx = ((e.clientX - r.left) / r.width - .5) * 2;
+    ty = ((e.clientY - r.top) / r.height - .5) * 2;
+    hero.style.setProperty('--gx', (e.clientX - r.left) + 'px');
+    hero.style.setProperty('--gy', (e.clientY - r.top) + 'px');
+    if (!running) { running = true; requestAnimationFrame(step); }
   });
-  if (hero) hero.addEventListener('pointerleave', () => { hx = 0; hy = 0; });
+  hero.addEventListener('pointerleave', () => { tx = 0; ty = 0; if (!running) { running = true; requestAnimationFrame(step); } });
+}
 
-  /* tombol magnet */
-  const mags = $$('.mag');
-  let mt = false, mev = null;
-  addEventListener('pointermove', e => {
-    mev = e;
-    if (mt) return;
-    mt = true;
-    requestAnimationFrame(() => {
-      mt = false;
-      mags.forEach(m => {
-        const r = m.getBoundingClientRect();
-        if (r.bottom < 0 || r.top > innerHeight) return;
-        const dx = mev.clientX - (r.left + r.width / 2), dy = mev.clientY - (r.top + r.height / 2);
-        const R = Math.max(r.width, r.height) * .75;
-        if (Math.hypot(dx, dy) < R) m.style.transform = `translate(${(dx * .26).toFixed(1)}px,${(dy * .38).toFixed(1)}px)`;
-        else if (m.style.transform) m.style.transform = '';
-      });
+/* ---------- Gelombang (canvas) ---------- */
+const waves = [];
+function makeWave(canvas) {
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const w = { canvas, ctx, W: 0, H: 0, vis: false };
+  const layers = [
+    { c: '255,61,129',  amp: .30, f: 1.2, s: 1.0,  p: 0,   fill: .16 },
+    { c: '255,122,61',  amp: .24, f: 1.8, s: -1.3, p: 1.6, fill: .12 },
+    { c: '255,200,61',  amp: .17, f: 2.5, s: 1.8,  p: 3.1, fill: 0   }
+  ];
+  w.size = () => {
+    const d = Math.min(devicePixelRatio || 1, 2), r = canvas.getBoundingClientRect();
+    w.W = r.width; w.H = r.height;
+    canvas.width = Math.round(w.W * d); canvas.height = Math.round(w.H * d);
+    ctx.setTransform(d, 0, 0, d, 0, 0);
+  };
+  w.draw = now => {
+    const t = now / 1000, { W, H } = w;
+    ctx.clearRect(0, 0, W, H);
+    layers.forEach(L => {
+      ctx.beginPath();
+      for (let x = 0; x <= W; x += 3) {
+        const nx = x / W, edge = Math.sqrt(Math.sin(nx * Math.PI));
+        const y = H * .55 + Math.sin(nx * Math.PI * 2 * L.f + t * L.s + L.p) * H * L.amp * edge;
+        if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.lineWidth = 2.5; ctx.lineJoin = 'round';
+      ctx.strokeStyle = `rgba(${L.c},.95)`; ctx.stroke();
+      if (L.fill) {
+        ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath();
+        const g = ctx.createLinearGradient(0, 0, 0, H);
+        g.addColorStop(0, `rgba(${L.c},${L.fill})`); g.addColorStop(1, `rgba(${L.c},0)`);
+        ctx.fillStyle = g; ctx.fill();
+      }
     });
-  }, { passive: true });
+  };
+  w.size();
+  waves.push(w);
+  if ('IntersectionObserver' in window) new IntersectionObserver(es => es.forEach(e => { w.vis = e.isIntersecting; })).observe(canvas);
+  else w.vis = true;
+  if (reduce) w.draw(1500);
 }
+makeWave($('#waveHero'));
+makeWave($('#waveBento'));
+addEventListener('resize', () => waves.forEach(w => { w.size(); if (reduce) w.draw(1500); }));
 
-let lastT = performance.now();
-function loop(now) {
-  const dt = Math.min((now - lastT) / 16.667, 3);
-  lastT = now;
+/* ---------- Peta titik (canvas) + daftar area + pengecek ---------- */
+let dmFrame = () => {}, dmVis = false;
+(function coverage() {
+  const dm = $('#dotmap'), cvs = $('#dmCanvas'), pinsEl = $('#dmPins');
+  const listEl = $('#areaList'), form = $('#checker'), input = $('#areaInput'), result = $('#areaResult');
+  if (!dm || !cvs || !listEl) return;
+  const ctx = cvs.getContext('2d');
+  const n = COVERAGE.length;
+  const AP = [[.2, .3], [.5, .14], [.8, .3], [.85, .66], [.56, .86], [.22, .74], [.36, .5], [.68, .5]];
+  const P = COVERAGE.map((a, i) => AP[i] || [.5 + Math.cos(i * 2.4) * .36, .5 + Math.sin(i * 2.4) * .34]);
+  let W = 0, H = 0, S = 16, R = 80, dots = [], act = 0;
 
-  if (cur && curShown && cur._ring) {
-    rx += (tx - rx) * .2 * dt; ry += (ty - ry) * .2 * dt;
-    cur._ring.style.transform = `translate(${rx.toFixed(1)}px,${ry.toFixed(1)}px)`;
-  }
-  if (hero && fine) {
-    hpx += (hx - hpx) * .08 * dt; hpy += (hy - hpy) * .08 * dt;
-    if (Math.abs(hpx - hx) > .001 || Math.abs(hpy - hy) > .001) {
-      hero.style.setProperty('--px', hpx.toFixed(3));
-      hero.style.setProperty('--py', hpy.toFixed(3));
+  const rgb = nx => {
+    const t = clamp(nx, 0, 1);
+    if (t < .55) { const k = t / .55; return [255, Math.round(61 + 61 * k), Math.round(129 - 68 * k)]; }
+    const k = (t - .55) / .45; return [255, Math.round(122 + 78 * k), 61];
+  };
+
+  function layout() {
+    const d = Math.min(devicePixelRatio || 1, 2), r = dm.getBoundingClientRect();
+    W = r.width; H = r.height;
+    cvs.width = Math.round(W * d); cvs.height = Math.round(H * d);
+    ctx.setTransform(d, 0, 0, d, 0, 0);
+    S = Math.max(13, Math.round(W / 38));
+    const cols = Math.floor((W - S) / S) + 1, rows = Math.floor((H - S) / S) + 1;
+    const ox = (W - (cols - 1) * S) / 2, oy = (H - (rows - 1) * S) / 2;
+    R = Math.min(W, H) * .2;
+    dots = [];
+    for (let a = 0; a < rows; a++) for (let b = 0; b < cols; b++) {
+      const x = ox + b * S, y = oy + a * S;
+      let ci = -1, best = 1e9;
+      P.forEach((p, i) => { const dd = Math.hypot(x - p[0] * W, y - p[1] * H); if (dd < R && dd < best) { best = dd; ci = i; } });
+      dots.push({ x, y, ci, dd: ci >= 0 ? best / R : 1, dh: Math.hypot(x - W / 2, y - H / 2), c: ci >= 0 && COVERAGE[ci].status === 'segera' ? [255, 200, 61] : rgb(x / W) });
     }
   }
-  if (track && mqIn && !reduce) {
-    const dy = scrollY - mqLastY; mqLastY = scrollY;
-    mqVel += (dy - mqVel) * .12;
-    mqSkew += (clamp(mqVel * .35, -9, 9) - mqSkew) * .15;
-    mqX -= (.8 + Math.min(Math.abs(mqVel) * .4, 16)) * dt;
-    if (mqX <= -mqW) mqX += mqW;
-    track.style.transform = `translate3d(${mqX.toFixed(1)}px,0,0)`;
-    mqEl.style.transform = `rotate(-2.2deg) skewX(${(-mqSkew).toFixed(2)}deg)`;
-  }
-  requestAnimationFrame(loop);
-}
-if (!reduce) requestAnimationFrame(loop);
 
-/* ---------- Tiket paket: miring 3D + kilau ---------- */
-const ticket = $('#ticket');
-if (ticket && fine && !reduce) {
-  ticket.addEventListener('pointermove', e => {
-    const r = ticket.getBoundingClientRect();
-    const px = (e.clientX - r.left) / r.width - .5, py = (e.clientY - r.top) / r.height - .5;
-    ticket.style.transform = `rotateY(${(px * 7).toFixed(2)}deg) rotateX(${(-py * 7).toFixed(2)}deg)`;
-    ticket.style.setProperty('--gx', (px + .5) * 100 + '%');
-    ticket.style.setProperty('--gy', (py + .5) * 100 + '%');
-  });
-  ticket.addEventListener('pointerleave', () => { ticket.style.transform = ''; });
-}
+  dmFrame = now => {
+    const t = now / 1000;
+    ctx.clearRect(0, 0, W, H);
+    const maxR = Math.hypot(W, H) / 2, rr = ((t * .17) % 1.25) * maxR, band = S * 2.4;
+    for (const p of dots) {
+      let a = .11, rad = 1.3, c = [255, 255, 255];
+      if (p.ci >= 0) {
+        const soon = COVERAGE[p.ci].status === 'segera';
+        c = p.c; a = (.34 + .5 * (1 - p.dd)) * (soon ? .75 : 1); rad = 1.7 + 1.3 * (1 - p.dd);
+        if (p.ci === act) { a = Math.min(1, a + .22 + .14 * Math.sin(t * 3 - p.dd * 5)); rad += .7; }
+      }
+      const dr = Math.abs(p.dh - rr);
+      if (dr < band) { const k = 1 - dr / band; a = Math.min(1, a + .5 * k); rad += k * .9; if (p.ci < 0) c = [255, 170, 120]; }
+      ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${a.toFixed(3)})`;
+      ctx.beginPath(); ctx.arc(p.x, p.y, rad, 0, 6.2832); ctx.fill();
+    }
+  };
 
-/* ---------- Confetti ---------- */
-const cv = $('#confetti'), cctx = cv.getContext('2d');
-let parts = [], crun = false;
-function burst(x, y) {
-  if (reduce) return;
-  cv.width = innerWidth; cv.height = innerHeight;
-  const colors = ['#2B33FF', '#FF6A2B', '#7CF2C9', '#FF9BD2', '#F7F7FF', '#12101A'];
-  for (let i = 0; i < 56; i++) {
-    const a = Math.random() * Math.PI * 2, s = 4 + Math.random() * 9;
-    parts.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 6, r: Math.random() * 6.28, vr: (Math.random() - .5) * .4, w: 6 + Math.random() * 7, h: 4 + Math.random() * 5, c: colors[i % colors.length], life: 1 });
-  }
-  if (!crun) { crun = true; requestAnimationFrame(cstep); }
-}
-function cstep() {
-  cctx.clearRect(0, 0, cv.width, cv.height);
-  parts = parts.filter(p => p.life > 0);
-  parts.forEach(p => {
-    p.vy += .35; p.vx *= .985; p.x += p.vx; p.y += p.vy; p.r += p.vr; p.life -= .012;
-    cctx.save(); cctx.globalAlpha = Math.max(p.life, 0); cctx.translate(p.x, p.y); cctx.rotate(p.r);
-    cctx.fillStyle = p.c; cctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); cctx.restore();
-  });
-  if (parts.length) requestAnimationFrame(cstep);
-  else { crun = false; cctx.clearRect(0, 0, cv.width, cv.height); }
-}
-$$('[data-confetti]').forEach(b => b.addEventListener('click', e => burst(e.clientX, e.clientY)));
-
-/* ---------- Jangkauan: radar + pengecek area ---------- */
-(function coverage() {
-  const radar = $('#radar'), listEl = $('#areaList'), form = $('#checker'), input = $('#areaInput'), result = $('#areaResult');
-  if (!radar || !listEl) return;
-
-  const n = COVERAGE.length, T = 6;
-  const pts = COVERAGE.map((a, i) => {
-    const phi = ((i * 360 / n) + (i % 2 ? 20 : -14) + 360) % 360;
-    const rr = i % 2 ? .74 : .44, rad = phi * Math.PI / 180;
-    return { phi, x: 50 + Math.sin(rad) * rr * 50, y: 50 - Math.cos(rad) * rr * 50 };
-  });
-
-  pts.forEach((p, i) => {
-    const a = COVERAGE[i], soon = a.status === 'segera';
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'blip' + (soon ? ' soon' : '') + (p.y < 22 ? ' below' : '');
-    b.dataset.i = i;
-    b.style.cssText = `--x:${p.x.toFixed(2)}%;--y:${p.y.toFixed(2)}%;--dl:${(p.phi / 360 * T).toFixed(2)}s`;
-    b.setAttribute('aria-label', a.name + (soon ? ' (segera)' : ''));
-    b.innerHTML = `<i></i><span class="blip-label">${esc(a.name)}${soon ? ' (segera)' : ''}</span>`;
-    radar.append(b);
-  });
-
+  /* pin HTML (bisa diklik + terbaca pembaca layar) */
+  pinsEl.innerHTML = COVERAGE.map((a, i) => {
+    const soon = a.status === 'segera';
+    return `<button class="dm-pin${soon ? ' soon' : ''}${P[i][1] < .22 ? ' below' : ''}" type="button" data-i="${i}" style="--x:${(P[i][0] * 100).toFixed(1)}%;--y:${(P[i][1] * 100).toFixed(1)}%" aria-label="${esc(a.name)}${soon ? ' (segera)' : ''}"><span class="dm-label">${esc(a.name)}${soon ? ' (segera)' : ''}</span></button>`;
+  }).join('');
   listEl.innerHTML = COVERAGE.map((a, i) =>
-    `<li><button class="area ${a.status === 'segera' ? 'soon' : ''}" type="button" data-i="${i}" aria-pressed="false"><span class="dot"></span><span>${esc(a.name)}</span>${a.status === 'segera' ? '<span class="soon-tag">Segera</span>' : ''}</button></li>`
+    `<li><button class="area${a.status === 'segera' ? ' soon' : ''}" type="button" data-i="${i}" aria-pressed="false"><span class="dot"></span><span>${esc(a.name)}</span>${a.status === 'segera' ? '<span class="soon-tag">Segera</span>' : ''}</button></li>`
   ).join('');
 
-  const blips = $$('.blip', radar), areaBtns = $$('.area', listEl);
-
+  const pins = $$('.dm-pin', pinsEl), areaBtns = $$('.area', listEl);
   function setActive(i) {
-    blips.forEach(b => b.classList.toggle('on', +b.dataset.i === i));
+    act = i;
+    pins.forEach(b => b.classList.toggle('on', +b.dataset.i === i));
     areaBtns.forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.i === i)));
-    const b = blips[i];
+    const b = pins[i];
     if (!b) return;
-    const label = $('.blip-label', b);
+    const label = $('.dm-label', b);
     label.style.setProperty('--sx', '0px');
     requestAnimationFrame(() => {
-      const wr = radar.getBoundingClientRect(), lr = label.getBoundingClientRect();
+      const wr = dm.getBoundingClientRect(), lr = label.getBoundingClientRect();
       let shift = 0;
-      if (lr.left < wr.left + 6) shift = wr.left + 6 - lr.left;
-      else if (lr.right > wr.right - 6) shift = wr.right - 6 - lr.right;
+      if (lr.left < wr.left + 8) shift = wr.left + 8 - lr.left;
+      else if (lr.right > wr.right - 8) shift = wr.right - 8 - lr.right;
       label.style.setProperty('--sx', shift.toFixed(1) + 'px');
     });
   }
   areaBtns.forEach(b => b.addEventListener('click', () => setActive(+b.dataset.i)));
-  blips.forEach(b => b.addEventListener('click', () => setActive(+b.dataset.i)));
-  setActive(0);
+  pins.forEach(b => b.addEventListener('click', () => setActive(+b.dataset.i)));
 
+  layout();
+  setActive(0);
+  if (reduce) dmFrame(1500);
+  let rt;
+  addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { layout(); setActive(act); if (reduce) dmFrame(1500); }, 150); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => setActive(act));
+  if ('IntersectionObserver' in window) new IntersectionObserver(es => es.forEach(e => { dmVis = e.isIntersecting; })).observe(dm);
+  else dmVis = true;
+
+  /* pengecek area */
   const norm = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
   const GENERIC = new Set(['desa', 'kelurahan', 'perumahan', 'komplek', 'kompleks', 'kampung', 'dusun', 'jalan', 'blok', 'kecamatan', 'kota', 'kabupaten']);
   const keyWords = s => norm(s).split(' ').filter(w => w.length >= 4 && !GENERIC.has(w));
@@ -438,7 +293,6 @@ $$('[data-confetti]').forEach(b => b.addEventListener('click', e => burst(e.clie
       result.append(' ', a);
     }
   }
-
   form.addEventListener('submit', e => {
     e.preventDefault();
     const q = norm(input.value);
@@ -461,6 +315,64 @@ $$('[data-confetti]').forEach(b => b.addEventListener('click', e => burst(e.clie
     }
   });
 })();
+
+/* ---------- Satu loop animasi untuk semua canvas ---------- */
+if (!reduce) {
+  (function loop(now) {
+    for (const w of waves) if (w.vis) w.draw(now);
+    if (dmVis) dmFrame(now);
+    requestAnimationFrame(loop);
+  })(performance.now());
+}
+
+/* ---------- Cara pasang: jalur perjalanan yang terisi saat scroll ---------- */
+const journey = $('#journey'), jsvg = $('#jpath'), jbase = $('#jbase'), jfill = $('#jfill'), jdot = $('#jdot'), jg = $('#jg');
+const jlis = $$('#jsteps .jstep');
+let jLen = 0, jNodes = [];
+
+function journeyBuild() {
+  if (!journey || !jbase) return;
+  const jr = journey.getBoundingClientRect();
+  const pts = jlis.map(li => {
+    const r = $('.jn', li).getBoundingClientRect();
+    return { x: r.left - jr.left + r.width / 2, y: r.top - jr.top + r.height / 2 };
+  });
+  const vertical = pts.every(p => Math.abs(p.x - pts[0].x) < 4);
+  let d = `M${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
+  for (let i = 1; i < pts.length; i++) {
+    const a = pts[i - 1], b = pts[i];
+    if (vertical) d += ` L${b.x.toFixed(1)} ${b.y.toFixed(1)}`;
+    else { const dx = (b.x - a.x) * .5; d += ` C${(a.x + dx).toFixed(1)} ${a.y.toFixed(1)} ${(b.x - dx).toFixed(1)} ${b.y.toFixed(1)} ${b.x.toFixed(1)} ${b.y.toFixed(1)}`; }
+  }
+  jbase.setAttribute('d', d); jfill.setAttribute('d', d);
+  jLen = jfill.getTotalLength();
+  jfill.style.strokeDasharray = jLen;
+  if (vertical) { jg.setAttribute('x1', 0); jg.setAttribute('x2', 0); jg.setAttribute('y1', pts[0].y); jg.setAttribute('y2', pts[pts.length - 1].y); }
+  else { jg.setAttribute('x1', pts[0].x); jg.setAttribute('x2', pts[pts.length - 1].x); jg.setAttribute('y1', 0); jg.setAttribute('y2', 0); }
+  /* posisi tiap simpul sepanjang jalur */
+  jNodes = pts.map(p => {
+    let best = 0, bd = 1e9;
+    for (let l = 0; l <= jLen; l += 4) { const q = jfill.getPointAtLength(l); const dd = Math.hypot(q.x - p.x, q.y - p.y); if (dd < bd) { bd = dd; best = l; } }
+    return best;
+  });
+}
+function journeyUpdate() {
+  if (!journey || !jLen) return;
+  const r = journey.getBoundingClientRect();
+  const start = innerHeight * .85, travel = innerHeight * .35 + r.height;
+  const p = reduce ? 1 : clamp((start - r.top) / travel, 0, 1);
+  const L = jLen * p;
+  jfill.style.strokeDashoffset = (jLen - L).toFixed(1);
+  const pt = jfill.getPointAtLength(L);
+  jdot.setAttribute('cx', pt.x.toFixed(1)); jdot.setAttribute('cy', pt.y.toFixed(1));
+  jdot.style.opacity = p > 0 && p < 1 ? 1 : 0;
+  jlis.forEach((li, i) => li.classList.toggle('on', L >= jNodes[i] - 2 && p > .005 || reduce));
+}
+journeyBuild();
+addEventListener('resize', () => { journeyBuild(); journeyUpdate(); });
+addEventListener('load', () => { journeyBuild(); journeyUpdate(); });
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { journeyBuild(); journeyUpdate(); });
+onScroll();
 
 /* ---------- FAQ ---------- */
 const qas = $$('.qa');
@@ -509,8 +421,6 @@ if (order) {
       'Alamat pemasangan: ' + order.elements.alamat.value.trim() + '\n' +
       'Paket: 10 Mbps (Rp150.000/bulan)\n\n' +
       'Mohon info jadwal survei. Terima kasih.';
-    const sb = $('button[type="submit"]', order).getBoundingClientRect();
-    burst(sb.left + sb.width / 2, sb.top + sb.height / 2);
     window.open(wa(text), '_blank', 'noopener');
     toast('Membuka WhatsApp');
   });
