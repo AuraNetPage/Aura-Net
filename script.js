@@ -1,5 +1,5 @@
 /* =========================================================
-   AURA NET v3 — SCRIPT
+   AURA NET — SCRIPT
    Bagian PENGATURAN di bawah ini yang paling sering Anda ubah.
    ========================================================= */
 (() => {
@@ -9,7 +9,9 @@
 const CONFIG = {
   phoneDisplay: '0895-6300-94597',
   phoneLocal:   '0895630094597',
-  phoneIntl:    '62895630094597'   // format WhatsApp: tanpa 0 di depan, diawali 62
+  phoneIntl:    '62895630094597',   // format WhatsApp: tanpa 0 di depan, diawali 62
+  loaderMinMs:  2500,              // lama minimum loading awal (milidetik)
+  loaderOncePerSession: false      // true = loading hanya tampil sekali per kunjungan
 };
 
 /* EDIT: ganti dengan nama desa / kelurahan / perumahan yang benar-benar terjangkau.
@@ -33,6 +35,24 @@ const clamp = (v, a, b) => Math.min(Math.max(v, a), b);
 const wa = (text = '') => `https://wa.me/${CONFIG.phoneIntl}` + (text ? `?text=${encodeURIComponent(text)}` : '');
 const esc = s => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+scrollTo(0, 0);
+
+/* ---------- Pecah kata: judul hero + judul bagian ---------- */
+const h1 = $('#h1');
+if (h1) {
+  const words = h1.textContent.trim().split(/\s+/);
+  h1.setAttribute('aria-label', words.join(' '));
+  h1.innerHTML = words.map((w, i) => `<span class="w" aria-hidden="true" style="--i:${i}">${esc(w)}</span>`).join(' ');
+}
+const wrEls = $$('.wr');
+wrEls.forEach(el => {
+  const words = el.textContent.trim().split(/\s+/);
+  el.setAttribute('aria-label', words.join(' '));
+  el.innerHTML = words.map(w => `<span class="wd" aria-hidden="true">${esc(w)}</span>`).join(' ');
+  el._w = $$('.wd', el);
+});
+
 /* ---------- Link WhatsApp dengan pesan otomatis ---------- */
 $$('[data-wa]').forEach(a => { a.href = wa(a.dataset.wa); });
 
@@ -46,19 +66,95 @@ function toast(msg) {
   toastT = setTimeout(() => toastEl.classList.remove('show'), 2600);
 }
 
+/* ---------- Sirkuit di hero ---------- */
+const CIRCUITS = {
+  d: { vb: [1000, 440], chip: { x: 440, y: 200, s: 120 }, fs: [46, 15], ns: 64,
+    nodes: [['phone', 130, 166], ['laptop', 98, 298], ['tablet', 355, 392], ['tv', 870, 166], ['game', 902, 298], ['home', 645, 392]],
+    traces: ['M440 228H380L318 166H162', 'M440 260H300L262 298H130', 'M440 292H395L355 332V360',
+             'M560 228H620L682 166H838', 'M560 260H700L738 298H870', 'M560 292H605L645 332V360',
+             'M480 320V440', 'M500 320V440', 'M520 320V440'] },
+  m: { vb: [360, 420], chip: { x: 138, y: 168, s: 84 }, fs: [34, 12], ns: 52,
+    nodes: [['phone', 56, 62], ['laptop', 56, 210], ['tablet', 84, 350], ['tv', 304, 62], ['game', 304, 210], ['home', 276, 350]],
+    traces: ['M156 168V108L110 62H82', 'M138 210H82', 'M156 252V312L118 350H110',
+             'M204 168V108L250 62H278', 'M222 210H278', 'M204 252V312L242 350H250', 'M180 252V420'] }
+};
+const circuitEl = $('#circuit');
+const mqMobile = matchMedia('(max-width: 700px)');
+let circuitBuilt = false;
+function buildCircuit() {
+  if (!circuitEl) return;
+  const c = mqMobile.matches ? CIRCUITS.m : CIRCUITS.d;
+  const [w, h] = c.vb, { x, y, s } = c.chip, cx = x + s / 2, cy = y + s / 2;
+  let o = `<svg viewBox="0 0 ${w} ${h}" aria-hidden="true"><defs><radialGradient id="cg"><stop offset="0" stop-color="#FF4D00" stop-opacity=".5"/><stop offset="1" stop-color="#FF4D00" stop-opacity="0"/></radialGradient></defs>`;
+  o += `<circle class="chip-glow" cx="${cx}" cy="${cy}" r="${s * 1.3}" fill="url(#cg)"/>`;
+  c.traces.forEach((d, i) => { o += `<path class="trace" pathLength="100" style="--i:${i}" d="${d}"/>`; });
+  c.traces.forEach((d, i) => { o += `<path class="pulse" pathLength="100" style="--d:${(1.5 + i * .55).toFixed(2)}s" d="${d}"/>`; });
+  c.nodes.forEach(([ic, nx, ny], i) => {
+    const n = c.ns, p = n * .25;
+    o += `<g transform="translate(${nx - n / 2} ${ny - n / 2})"><g class="node" style="--i:${i}"><rect width="${n}" height="${n}" rx="${n * .25}"/><use href="#i-${ic}" class="n-ic" x="${p}" y="${p}" width="${n / 2}" height="${n / 2}"/></g></g>`;
+  });
+  o += `<g class="chip-wrap"><g class="chip"><rect x="${x}" y="${y}" width="${s}" height="${s}" rx="${s * .18}"/><rect x="${x + 8}" y="${y + 8}" width="${s - 16}" height="${s - 16}" rx="${s * .12}" fill="none" stroke="rgba(255,255,255,.08)"/><text class="t1" x="${cx}" y="${cy + c.fs[0] * .12}" style="font-size:${c.fs[0]}px">10</text><text class="t2" x="${cx}" y="${cy + c.fs[0] * .12 + c.fs[1] * 1.7}" style="font-size:${c.fs[1]}px">Mbps</text></g></g>`;
+  o += '</svg>';
+  circuitEl.innerHTML = o;
+  circuitBuilt = true;
+}
+mqMobile.addEventListener('change', () => { if (circuitBuilt) buildCircuit(); });
+
+/* ---------- Loading awal -> layar terangkat -> hero muncul ---------- */
+const loader = $('#loader'), ldMark = $('#ldMark');
+let started = false;
+
+function finishNow() {
+  html.classList.add('ready', 'logo-on');
+  html.classList.remove('loading');
+  buildCircuit();
+  if (loader) loader.remove();
+  started = true;
+}
+function exitLoader() {
+  if (started) return;
+  started = true;
+  const nl = $('.nav .logo');
+  const a = ldMark.getBoundingClientRect(), b = nl.getBoundingClientRect();
+  const sc = b.width / a.width;
+  ldMark.style.translate = `${(b.left + b.width / 2) - (a.left + a.width / 2)}px ${(b.top + b.height / 2) - (a.top + a.height / 2)}px`;
+  ldMark.style.scale = sc.toFixed(3);
+  loader.classList.add('go');
+  setTimeout(() => { html.classList.add('ready'); buildCircuit(); }, 700);
+  setTimeout(() => { html.classList.add('logo-on'); ldMark.style.opacity = 0; }, 1050);
+  setTimeout(() => { html.classList.remove('loading'); loader.remove(); }, 1600);
+}
+
+const skipLoader = reduce || (CONFIG.loaderOncePerSession && sessionStorage.getItem('aura-seen'));
+if (skipLoader || !loader) {
+  finishNow();
+} else {
+  try { sessionStorage.setItem('aura-seen', '1'); } catch (e) { /* abaikan */ }
+  const t0 = performance.now();
+  const loaded = new Promise(r => document.readyState === 'complete' ? r() : addEventListener('load', r));
+  const fontsOk = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
+  Promise.all([loaded, fontsOk]).then(() => {
+    setTimeout(exitLoader, Math.max(0, CONFIG.loaderMinMs - (performance.now() - t0)));
+  });
+  setTimeout(exitLoader, 6500);   // pengaman bila ada yang lambat
+}
+loader && loader.addEventListener('click', () => { if (performance.now() > 1200) exitLoader(); });
+
 /* ---------- Navigasi ---------- */
 const nav = $('#nav'), burger = $('#burger'), prog = $('#progress'), fab = $('#fab');
+const TOPBAR_H = 52;
 let ticking = false;
 function onScroll() {
   const y = scrollY;
-  nav.classList.toggle('scrolled', y > 20);
+  html.style.setProperty('--navTop', Math.max(12, TOPBAR_H - y) + 'px');
   const max = html.scrollHeight - innerHeight;
   prog.style.transform = `scaleX(${max > 0 ? clamp(y / max, 0, 1) : 0})`;
   fab.classList.toggle('show', y > 500);
-  journeyUpdate();
+  wrUpdate();
   ticking = false;
 }
 addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
+addEventListener('resize', () => requestAnimationFrame(onScroll));
 
 function setMenu(open) {
   nav.classList.toggle('open', open);
@@ -68,8 +164,8 @@ function setMenu(open) {
 burger.addEventListener('click', () => setMenu(!nav.classList.contains('open')));
 $$('.mnav a').forEach(a => a.addEventListener('click', () => setMenu(false)));
 addEventListener('keydown', e => { if (e.key === 'Escape') setMenu(false); });
-addEventListener('resize', () => { if (innerWidth > 860) setMenu(false); });
-document.addEventListener('click', e => { if (nav.classList.contains('open') && !e.target.closest('.nav')) setMenu(false); });
+addEventListener('resize', () => { if (innerWidth > 900) setMenu(false); });
+document.addEventListener('click', e => { if (nav.classList.contains('open') && !e.target.closest('.nav-pill')) setMenu(false); });
 
 if ('IntersectionObserver' in window) {
   const navLinks = $$('.links a[href^="#"], .mnav a[href^="#"]');
@@ -80,14 +176,26 @@ if ('IntersectionObserver' in window) {
       if (on) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current');
     });
   }), { rootMargin: '-45% 0px -50% 0px' });
-  ['paket', 'jangkauan', 'pasang', 'faq'].forEach(id => { const el = document.getElementById(id); if (el) spy.observe(el); });
+  ['keunggulan', 'jangkauan', 'pasang', 'paket', 'faq'].forEach(id => { const el = document.getElementById(id); if (el) spy.observe(el); });
+}
+
+/* ---------- Teks menyala kata demi kata saat di-scroll ---------- */
+function wrUpdate() {
+  const vh = innerHeight;
+  for (const el of wrEls) {
+    const r = el.getBoundingClientRect();
+    if (r.bottom < -50 || r.top > vh + 50) continue;
+    const p = reduce ? 1 : clamp((vh * .9 - r.top) / (vh * .42), 0, 1);
+    const n = el._w.length;
+    el._w.forEach((s, i) => { s.style.opacity = (.18 + .82 * clamp(p * (n + 1.5) - i, 0, 1)).toFixed(2); });
+  }
 }
 
 /* ---------- Muncul saat scroll + hitungan harga ---------- */
-const price = $('#priceNum');
-if (price && !reduce) price.textContent = '0';
+const prices = $$('[data-count]');
+if (!reduce) prices.forEach(el => { el.textContent = '0'; });
 function countTo(el) {
-  const to = +el.dataset.count, dur = 1600, s = performance.now();
+  const to = +el.dataset.count, dur = 1700, s = performance.now();
   (function f(n) {
     const p = Math.min((n - s) / dur, 1);
     el.textContent = Math.round(to * (1 - Math.pow(1 - p, 4))).toLocaleString('id-ID');
@@ -102,7 +210,8 @@ if ('IntersectionObserver' in window && !reduce) {
     o.unobserve(e.target);
   }), { threshold: .12, rootMargin: '0px 0px -6% 0px' });
   $$('.reveal').forEach(el => io.observe(el));
-  if (price) new IntersectionObserver((es, o) => es.forEach(e => { if (e.isIntersecting) { countTo(price); o.unobserve(e.target); } }), { threshold: .6 }).observe(price);
+  const cio = new IntersectionObserver((es, o) => es.forEach(e => { if (e.isIntersecting) { countTo(e.target); o.unobserve(e.target); } }), { threshold: .6 });
+  prices.forEach(el => cio.observe(el));
 }
 
 /* ---------- Cahaya kartu mengikuti kursor ---------- */
@@ -114,174 +223,140 @@ if (fine) {
     t.style.setProperty('--mx', (e.clientX - r.left) + 'px');
     t.style.setProperty('--my', (e.clientY - r.top) + 'px');
   }, { passive: true });
-}
-
-/* ---------- Hero: miring halus mengikuti kursor ---------- */
-const hero = $('.hero'), heroUi = $('#heroUi');
-if (hero && heroUi && fine && !reduce) {
-  let tx = 0, ty = 0, cx = 0, cy = 0, running = false;
-  const step = () => {
-    cx += (tx - cx) * .1; cy += (ty - cy) * .1;
-    heroUi.style.setProperty('--px', cx.toFixed(3));
-    heroUi.style.setProperty('--py', cy.toFixed(3));
-    if (Math.abs(tx - cx) > .002 || Math.abs(ty - cy) > .002) requestAnimationFrame(step);
-    else running = false;
-  };
-  hero.addEventListener('pointermove', e => {
+  const hero = $('.hero');
+  if (hero) hero.addEventListener('pointermove', e => {
     const r = hero.getBoundingClientRect();
-    tx = ((e.clientX - r.left) / r.width - .5) * 2;
-    ty = ((e.clientY - r.top) / r.height - .5) * 2;
     hero.style.setProperty('--gx', (e.clientX - r.left) + 'px');
     hero.style.setProperty('--gy', (e.clientY - r.top) + 'px');
-    if (!running) { running = true; requestAnimationFrame(step); }
-  });
-  hero.addEventListener('pointerleave', () => { tx = 0; ty = 0; if (!running) { running = true; requestAnimationFrame(step); } });
+  }, { passive: true });
 }
 
-/* ---------- Gelombang (canvas) ---------- */
-const waves = [];
-function makeWave(canvas) {
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const w = { canvas, ctx, W: 0, H: 0, vis: false };
-  const layers = [
-    { c: '255,61,129',  amp: .30, f: 1.2, s: 1.0,  p: 0,   fill: .16 },
-    { c: '255,122,61',  amp: .24, f: 1.8, s: -1.3, p: 1.6, fill: .12 },
-    { c: '255,200,61',  amp: .17, f: 2.5, s: 1.8,  p: 3.1, fill: 0   }
-  ];
-  w.size = () => {
-    const d = Math.min(devicePixelRatio || 1, 2), r = canvas.getBoundingClientRect();
-    w.W = r.width; w.H = r.height;
-    canvas.width = Math.round(w.W * d); canvas.height = Math.round(w.H * d);
-    ctx.setTransform(d, 0, 0, d, 0, 0);
-  };
-  w.draw = now => {
-    const t = now / 1000, { W, H } = w;
-    ctx.clearRect(0, 0, W, H);
-    layers.forEach(L => {
-      ctx.beginPath();
-      for (let x = 0; x <= W; x += 3) {
-        const nx = x / W, edge = Math.sqrt(Math.sin(nx * Math.PI));
-        const y = H * .55 + Math.sin(nx * Math.PI * 2 * L.f + t * L.s + L.p) * H * L.amp * edge;
-        if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-      }
-      ctx.lineWidth = 2.5; ctx.lineJoin = 'round';
-      ctx.strokeStyle = `rgba(${L.c},.95)`; ctx.stroke();
-      if (L.fill) {
-        ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath();
-        const g = ctx.createLinearGradient(0, 0, 0, H);
-        g.addColorStop(0, `rgba(${L.c},${L.fill})`); g.addColorStop(1, `rgba(${L.c},0)`);
-        ctx.fillStyle = g; ctx.fill();
-      }
-    });
-  };
-  w.size();
-  waves.push(w);
-  if ('IntersectionObserver' in window) new IntersectionObserver(es => es.forEach(e => { w.vis = e.isIntersecting; })).observe(canvas);
-  else w.vis = true;
-  if (reduce) w.draw(1500);
-}
-makeWave($('#waveHero'));
-makeWave($('#waveBento'));
-addEventListener('resize', () => waves.forEach(w => { w.size(); if (reduce) w.draw(1500); }));
+/* ---------- Dekorasi kecil ---------- */
+$$('.row').forEach(r => { r.innerHTML += r.innerHTML; });            // marquee mulus
+const eq = $('#eq');
+if (eq) eq.innerHTML = Array.from({ length: 34 }, (_, i) => `<i style="--i:${i}"></i>`).join('');
 
-/* ---------- Peta titik (canvas) + daftar area + pengecek ---------- */
-let dmFrame = () => {}, dmVis = false;
+/* ---------- Bola dunia + daftar area + pengecek ---------- */
 (function coverage() {
-  const dm = $('#dotmap'), cvs = $('#dmCanvas'), pinsEl = $('#dmPins');
+  const wrap = $('#globe'), cvs = $('#gCanvas'), pinsEl = $('#gpins');
   const listEl = $('#areaList'), form = $('#checker'), input = $('#areaInput'), result = $('#areaResult');
-  if (!dm || !cvs || !listEl) return;
+  if (!wrap || !cvs || !listEl) return;
   const ctx = cvs.getContext('2d');
-  const n = COVERAGE.length;
-  const AP = [[.2, .3], [.5, .14], [.8, .3], [.85, .66], [.56, .86], [.22, .74], [.36, .5], [.68, .5]];
-  const P = COVERAGE.map((a, i) => AP[i] || [.5 + Math.cos(i * 2.4) * .36, .5 + Math.sin(i * 2.4) * .34]);
-  let W = 0, H = 0, S = 16, R = 80, dots = [], act = 0;
+  const D = Math.PI / 180;
+  const PL = [[20, -100], [34, -52], [8, -8], [26, 30], [12, 72], [30, 112]];
+  const loc = i => PL[i] || [10 + (i * 13) % 30, -120 + (i * 47) % 240];
 
-  const rgb = nx => {
-    const t = clamp(nx, 0, 1);
-    if (t < .55) { const k = t / .55; return [255, Math.round(61 + 61 * k), Math.round(129 - 68 * k)]; }
-    const k = (t - .55) / .45; return [255, Math.round(122 + 78 * k), 61];
+  /* titik daratan (pseudo benua) */
+  const land = (la, lo) => {
+    const v = Math.sin(lo * 1.3 + .4) * Math.cos(la * 1.8) + Math.sin(lo * 2.7 - la * 1.5 + 1.1) * .6 +
+              Math.cos(lo * .8 + la * 2.6 - .7) * .55 + Math.sin(la * 4.1 + lo * 1.9) * .3;
+    return v > .5;
   };
-
-  function layout() {
-    const d = Math.min(devicePixelRatio || 1, 2), r = dm.getBoundingClientRect();
-    W = r.width; H = r.height;
-    cvs.width = Math.round(W * d); cvs.height = Math.round(H * d);
-    ctx.setTransform(d, 0, 0, d, 0, 0);
-    S = Math.max(13, Math.round(W / 38));
-    const cols = Math.floor((W - S) / S) + 1, rows = Math.floor((H - S) / S) + 1;
-    const ox = (W - (cols - 1) * S) / 2, oy = (H - (rows - 1) * S) / 2;
-    R = Math.min(W, H) * .2;
-    dots = [];
-    for (let a = 0; a < rows; a++) for (let b = 0; b < cols; b++) {
-      const x = ox + b * S, y = oy + a * S;
-      let ci = -1, best = 1e9;
-      P.forEach((p, i) => { const dd = Math.hypot(x - p[0] * W, y - p[1] * H); if (dd < R && dd < best) { best = dd; ci = i; } });
-      dots.push({ x, y, ci, dd: ci >= 0 ? best / R : 1, dh: Math.hypot(x - W / 2, y - H / 2), c: ci >= 0 && COVERAGE[ci].status === 'segera' ? [255, 200, 61] : rgb(x / W) });
+  const pts = [], step = 3.3 * D;
+  for (let la = -84 * D; la <= 84 * D; la += step) {
+    const n = Math.max(1, Math.round(2 * Math.PI * Math.cos(la) / step));
+    const off = (Math.round((la + Math.PI / 2) / step) % 2) * .5;
+    for (let k = 0; k < n; k++) {
+      const lo = (k + off) / n * 2 * Math.PI - Math.PI;
+      if (land(la, lo)) pts.push({ cl: Math.cos(la), sl: Math.sin(la), lo });
     }
   }
 
-  dmFrame = now => {
-    const t = now / 1000;
-    ctx.clearRect(0, 0, W, H);
-    const maxR = Math.hypot(W, H) / 2, rr = ((t * .17) % 1.25) * maxR, band = S * 2.4;
-    for (const p of dots) {
-      let a = .11, rad = 1.3, c = [255, 255, 255];
-      if (p.ci >= 0) {
-        const soon = COVERAGE[p.ci].status === 'segera';
-        c = p.c; a = (.34 + .5 * (1 - p.dd)) * (soon ? .75 : 1); rad = 1.7 + 1.3 * (1 - p.dd);
-        if (p.ci === act) { a = Math.min(1, a + .22 + .14 * Math.sin(t * 3 - p.dd * 5)); rad += .7; }
-      }
-      const dr = Math.abs(p.dh - rr);
-      if (dr < band) { const k = 1 - dr / band; a = Math.min(1, a + .5 * k); rad += k * .9; if (p.ci < 0) c = [255, 170, 120]; }
-      ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${a.toFixed(3)})`;
-      ctx.beginPath(); ctx.arc(p.x, p.y, rad, 0, 6.2832); ctx.fill();
-    }
-  };
+  let S = 0, R = 0, cx = 0, cy = 0, dpr = 1, bg = null;
+  let rot = 0, tilt = .3, tRot = null, tTilt = .3, hold = 0, vis = false, act = 0, lblW = 90;
 
-  /* pin HTML (bisa diklik + terbaca pembaca layar) */
+  function layout() {
+    dpr = Math.min(devicePixelRatio || 1, 2);
+    S = wrap.getBoundingClientRect().width;
+    cvs.width = Math.round(S * dpr); cvs.height = Math.round(S * dpr);
+    cx = S / 2; cy = S * .5; R = S * .36;
+    bg = document.createElement('canvas'); bg.width = cvs.width; bg.height = cvs.height;
+    const g = bg.getContext('2d'); g.scale(dpr, dpr);
+    let gr = g.createRadialGradient(cx, cy, R * .92, cx, cy, R * 1.34);
+    gr.addColorStop(0, 'rgba(255,92,20,.95)'); gr.addColorStop(.18, 'rgba(255,77,0,.55)'); gr.addColorStop(.5, 'rgba(255,60,0,.14)'); gr.addColorStop(1, 'rgba(255,60,0,0)');
+    g.fillStyle = gr; g.beginPath(); g.arc(cx, cy, R * 1.34, 0, 7); g.fill();
+    gr = g.createRadialGradient(cx - R * .25, cy - R * .3, R * .1, cx, cy, R);
+    gr.addColorStop(0, '#1b0e18'); gr.addColorStop(.7, '#0b0610'); gr.addColorStop(1, '#050308');
+    g.fillStyle = gr; g.beginPath(); g.arc(cx, cy, R, 0, 7); g.fill();
+    gr = g.createRadialGradient(cx, cy, R * .78, cx, cy, R);
+    gr.addColorStop(0, 'rgba(255,100,20,0)'); gr.addColorStop(1, 'rgba(255,115,35,.6)');
+    g.fillStyle = gr; g.beginPath(); g.arc(cx, cy, R, 0, 7); g.fill();
+    g.strokeStyle = 'rgba(255,150,70,.9)'; g.lineWidth = 1.5; g.beginPath(); g.arc(cx, cy, R, 0, 7); g.stroke();
+  }
+
+  /* pin HTML + daftar area */
   pinsEl.innerHTML = COVERAGE.map((a, i) => {
     const soon = a.status === 'segera';
-    return `<button class="dm-pin${soon ? ' soon' : ''}${P[i][1] < .22 ? ' below' : ''}" type="button" data-i="${i}" style="--x:${(P[i][0] * 100).toFixed(1)}%;--y:${(P[i][1] * 100).toFixed(1)}%" aria-label="${esc(a.name)}${soon ? ' (segera)' : ''}"><span class="dm-label">${esc(a.name)}${soon ? ' (segera)' : ''}</span></button>`;
+    return `<button class="gpin${soon ? ' soon' : ''}" type="button" data-i="${i}" aria-label="${esc(a.name)}${soon ? ' (segera)' : ''}"><span class="gl">${esc(a.name)}${soon ? ' (segera)' : ''}</span></button>`;
   }).join('');
   listEl.innerHTML = COVERAGE.map((a, i) =>
     `<li><button class="area${a.status === 'segera' ? ' soon' : ''}" type="button" data-i="${i}" aria-pressed="false"><span class="dot"></span><span>${esc(a.name)}</span>${a.status === 'segera' ? '<span class="soon-tag">Segera</span>' : ''}</button></li>`
   ).join('');
+  const pins = $$('.gpin', pinsEl), areaBtns = $$('.area', listEl);
 
-  const pins = $$('.dm-pin', pinsEl), areaBtns = $$('.area', listEl);
-  function setActive(i) {
+  function setActive(i, focus) {
     act = i;
     pins.forEach(b => b.classList.toggle('on', +b.dataset.i === i));
     areaBtns.forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.i === i)));
-    const b = pins[i];
-    if (!b) return;
-    const label = $('.dm-label', b);
-    label.style.setProperty('--sx', '0px');
-    requestAnimationFrame(() => {
-      const wr = dm.getBoundingClientRect(), lr = label.getBoundingClientRect();
-      let shift = 0;
-      if (lr.left < wr.left + 8) shift = wr.left + 8 - lr.left;
-      else if (lr.right > wr.right - 8) shift = wr.right - 8 - lr.right;
-      label.style.setProperty('--sx', shift.toFixed(1) + 'px');
+    const gl = $('.gl', pins[i]); if (gl) lblW = gl.offsetWidth || 90;
+    if (focus) {
+      const [la, lo] = loc(i);
+      tRot = -lo * D; tTilt = clamp(la * D * .6 + .1, .1, .5);
+      hold = performance.now() + 6000;
+    }
+  }
+  areaBtns.forEach(b => b.addEventListener('click', () => setActive(+b.dataset.i, true)));
+  pins.forEach(b => b.addEventListener('click', () => setActive(+b.dataset.i, true)));
+
+  const shortest = d => { while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI; return d; };
+  function frame(now, dt) {
+    if (now < hold && tRot !== null) {
+      rot += shortest(tRot - rot) * .07 * dt; tilt += (tTilt - tilt) * .07 * dt;
+    } else {
+      rot += .0022 * dt; tilt += (.3 - tilt) * .02 * dt;
+    }
+    const ct = Math.cos(tilt), st = Math.sin(tilt);
+    ctx.clearRect(0, 0, S, S);
+    ctx.drawImage(bg, 0, 0, S, S);
+    for (const p of pts) {
+      const lo = p.lo + rot;
+      const x = p.cl * Math.sin(lo), z0 = p.cl * Math.cos(lo);
+      const y = p.sl * ct - z0 * st, z = p.sl * st + z0 * ct;
+      if (z <= .03) continue;
+      ctx.fillStyle = `rgba(236,236,242,${(.22 + .78 * z).toFixed(2)})`;
+      ctx.beginPath(); ctx.arc(cx + R * x, cy - R * y, R * .0105 * (.55 + .7 * z), 0, 6.2832); ctx.fill();
+    }
+    /* posisi pin */
+    pins.forEach((b, i) => {
+      const [la, lo0] = loc(i), lo = lo0 * D + rot, cl = Math.cos(la * D), sl = Math.sin(la * D);
+      const x = cl * Math.sin(lo), z0 = cl * Math.cos(lo);
+      const y = sl * ct - z0 * st, z = sl * st + z0 * ct;
+      const px = cx + R * x, py = cy - R * y;
+      b.style.transform = `translate(${px.toFixed(1)}px,${py.toFixed(1)}px)`;
+      const show = z > .12 && py < S * .74;
+      b.style.opacity = show ? Math.min(1, (z - .12) * 5).toFixed(2) : 0;
+      b.style.pointerEvents = show ? 'auto' : 'none';
+      if (i === act) {
+        const half = lblW / 2 + 10;
+        const sh = px - half < 6 ? 6 - (px - half) : (px + half > S - 6 ? (S - 6) - (px + half) : 0);
+        b.style.setProperty('--sx', sh.toFixed(1) + 'px');
+      }
     });
   }
-  areaBtns.forEach(b => b.addEventListener('click', () => setActive(+b.dataset.i)));
-  pins.forEach(b => b.addEventListener('click', () => setActive(+b.dataset.i)));
 
-  layout();
-  setActive(0);
-  if (reduce) dmFrame(1500);
-  let rt;
-  addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { layout(); setActive(act); if (reduce) dmFrame(1500); }, 150); });
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => setActive(act));
-  if ('IntersectionObserver' in window) new IntersectionObserver(es => es.forEach(e => { dmVis = e.isIntersecting; })).observe(dm);
-  else dmVis = true;
+  layout(); setActive(0, false);
+  addEventListener('resize', () => { layout(); if (reduce) frame(performance.now(), 1); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => setActive(act, false));
+  if ('IntersectionObserver' in window) new IntersectionObserver(es => es.forEach(e => { vis = e.isIntersecting; })).observe(wrap);
+  else vis = true;
+  let last = performance.now();
+  if (reduce) frame(last, 1);
+  else (function loop(now) { const dt = Math.min((now - last) / 16.667, 3); last = now; if (vis) frame(now, dt); requestAnimationFrame(loop); })(last);
 
   /* pengecek area */
   const norm = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
   const GENERIC = new Set(['desa', 'kelurahan', 'perumahan', 'komplek', 'kompleks', 'kampung', 'dusun', 'jalan', 'blok', 'kecamatan', 'kota', 'kabupaten']);
   const keyWords = s => norm(s).split(' ').filter(w => w.length >= 4 && !GENERIC.has(w));
-
   function show(type, text, withLink) {
     result.className = 'result ' + type;
     result.textContent = text;
@@ -306,73 +381,42 @@ let dmFrame = () => {}, dmVis = false;
       show('bad', 'Wilayah itu belum ada di daftar kami. Hubungi kami, siapa tahu sudah bisa dipasang.', true);
     } else if (hits.length === 1) {
       const { a, i } = hits[0];
-      setActive(i);
+      setActive(i, true);
       if (a.status === 'segera') show('soon', `${a.name} masuk rencana perluasan. Hubungi kami untuk info terbaru.`);
       else show('ok', `${a.name} termasuk area layanan Aura Net. Hubungi kami untuk jadwal pemasangan.`);
     } else {
-      setActive(hits[0].i);
+      setActive(hits[0].i, true);
       show('ok', `Ditemukan ${hits.length} wilayah: ${hits.map(h => h.a.name).join(', ')}. Pilih salah satu dari daftar.`);
     }
   });
 })();
 
-/* ---------- Satu loop animasi untuk semua canvas ---------- */
-if (!reduce) {
-  (function loop(now) {
-    for (const w of waves) if (w.vis) w.draw(now);
-    if (dmVis) dmFrame(now);
-    requestAnimationFrame(loop);
-  })(performance.now());
-}
-
-/* ---------- Cara pasang: jalur perjalanan yang terisi saat scroll ---------- */
-const journey = $('#journey'), jsvg = $('#jpath'), jbase = $('#jbase'), jfill = $('#jfill'), jdot = $('#jdot'), jg = $('#jg');
-const jlis = $$('#jsteps .jstep');
-let jLen = 0, jNodes = [];
-
-function journeyBuild() {
-  if (!journey || !jbase) return;
-  const jr = journey.getBoundingClientRect();
-  const pts = jlis.map(li => {
-    const r = $('.jn', li).getBoundingClientRect();
-    return { x: r.left - jr.left + r.width / 2, y: r.top - jr.top + r.height / 2 };
-  });
-  const vertical = pts.every(p => Math.abs(p.x - pts[0].x) < 4);
-  let d = `M${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
-  for (let i = 1; i < pts.length; i++) {
-    const a = pts[i - 1], b = pts[i];
-    if (vertical) d += ` L${b.x.toFixed(1)} ${b.y.toFixed(1)}`;
-    else { const dx = (b.x - a.x) * .5; d += ` C${(a.x + dx).toFixed(1)} ${a.y.toFixed(1)} ${(b.x - dx).toFixed(1)} ${b.y.toFixed(1)} ${b.x.toFixed(1)} ${b.y.toFixed(1)}`; }
+/* ---------- Cara pasang: tab otomatis berganti ---------- */
+(function steps() {
+  const tabsEl = $('#tabs'), stage = $('#stage'), bar = $('#tabProg');
+  if (!tabsEl || !stage) return;
+  const tabs = $$('.tab', tabsEl), slides = $$('.slide', stage);
+  let cur = 0, inView = false;
+  function restart() {
+    bar.classList.remove('run'); void bar.offsetWidth;
+    if (inView && !reduce) bar.classList.add('run');
   }
-  jbase.setAttribute('d', d); jfill.setAttribute('d', d);
-  jLen = jfill.getTotalLength();
-  jfill.style.strokeDasharray = jLen;
-  if (vertical) { jg.setAttribute('x1', 0); jg.setAttribute('x2', 0); jg.setAttribute('y1', pts[0].y); jg.setAttribute('y2', pts[pts.length - 1].y); }
-  else { jg.setAttribute('x1', pts[0].x); jg.setAttribute('x2', pts[pts.length - 1].x); jg.setAttribute('y1', 0); jg.setAttribute('y2', 0); }
-  /* posisi tiap simpul sepanjang jalur */
-  jNodes = pts.map(p => {
-    let best = 0, bd = 1e9;
-    for (let l = 0; l <= jLen; l += 4) { const q = jfill.getPointAtLength(l); const dd = Math.hypot(q.x - p.x, q.y - p.y); if (dd < bd) { bd = dd; best = l; } }
-    return best;
+  function go(i) {
+    cur = (i + tabs.length) % tabs.length;
+    tabs.forEach((t, k) => { t.classList.toggle('on', k === cur); t.setAttribute('aria-selected', String(k === cur)); });
+    slides.forEach((s, k) => s.classList.toggle('on', k === cur));
+    restart();
+  }
+  tabs.forEach((t, k) => t.addEventListener('click', () => go(k)));
+  bar.addEventListener('animationend', () => go(cur + 1));
+  [tabsEl, stage].forEach(el => {
+    el.addEventListener('pointerenter', () => tabsEl.classList.add('paused'));
+    el.addEventListener('pointerleave', () => tabsEl.classList.remove('paused'));
+    el.addEventListener('focusin', () => tabsEl.classList.add('paused'));
+    el.addEventListener('focusout', () => tabsEl.classList.remove('paused'));
   });
-}
-function journeyUpdate() {
-  if (!journey || !jLen) return;
-  const r = journey.getBoundingClientRect();
-  const start = innerHeight * .85, travel = innerHeight * .35 + r.height;
-  const p = reduce ? 1 : clamp((start - r.top) / travel, 0, 1);
-  const L = jLen * p;
-  jfill.style.strokeDashoffset = (jLen - L).toFixed(1);
-  const pt = jfill.getPointAtLength(L);
-  jdot.setAttribute('cx', pt.x.toFixed(1)); jdot.setAttribute('cy', pt.y.toFixed(1));
-  jdot.style.opacity = p > 0 && p < 1 ? 1 : 0;
-  jlis.forEach((li, i) => li.classList.toggle('on', L >= jNodes[i] - 2 && p > .005 || reduce));
-}
-journeyBuild();
-addEventListener('resize', () => { journeyBuild(); journeyUpdate(); });
-addEventListener('load', () => { journeyBuild(); journeyUpdate(); });
-if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { journeyBuild(); journeyUpdate(); });
-onScroll();
+  if ('IntersectionObserver' in window) new IntersectionObserver(es => es.forEach(e => { inView = e.isIntersecting; restart(); }), { threshold: .35 }).observe(stage);
+})();
 
 /* ---------- FAQ ---------- */
 const qas = $$('.qa');
@@ -430,4 +474,5 @@ if (order) {
 const yr = $('#year');
 if (yr) yr.textContent = new Date().getFullYear();
 
+onScroll();
 })();
