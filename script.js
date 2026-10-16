@@ -8,12 +8,8 @@
 const CONFIG = {
   // Daftar wilayah yang sudah terjangkau (ganti dengan nama asli)
   areas: [
-    'Desa Contoh A',
-    'Desa Contoh B',
-    'Kelurahan Contoh C',
-    'Perumahan Contoh D',
-    'Dusun Contoh E',
-    'Kecamatan Contoh F'
+    'Parit Masigi 1',
+    'Jalan Kemuning',
   ],
   phoneDisplay: '0895 6300 94597',
   whatsappNumber: '62895630094597',
@@ -27,6 +23,7 @@ const CONFIG = {
   const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
   const clamp = (n, min, max) => Math.min(max, Math.max(min, n));
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const finePointer = window.matchMedia('(pointer: fine)').matches;
 
   const body = document.body;
   const loader = $('#loader');
@@ -83,49 +80,98 @@ const CONFIG = {
       entry.target.classList.add('in');
       titleObserver.unobserve(entry.target);
     });
-  }, { threshold: 0.6 });
+  }, { threshold: 0.5 });
   sectionTitles.forEach((h) => titleObserver.observe(h));
 
   /* ---------------------------------------------------------
-     3. NAVIGASI
+     3. NAVIGASI (pil melayang + penanda geser)
      --------------------------------------------------------- */
   const nav = $('#nav');
   const navLinks = $('#navLinks');
   const navToggle = $('#navToggle');
   const progress = $('#progress');
+  const ind = $('.nav__ind', navLinks);
+  const desktopQuery = window.matchMedia('(min-width: 901px)');
 
   function setMenu(open) {
     navLinks.classList.toggle('is-open', open);
+    nav.classList.toggle('menu-open', open);
     navToggle.setAttribute('aria-expanded', String(open));
     navToggle.setAttribute('aria-label', open ? 'Tutup menu' : 'Buka menu');
     body.style.overflow = open ? 'hidden' : '';
+    if (open) nav.classList.remove('nav--hide');
   }
 
   navToggle.addEventListener('click', () => setMenu(!navLinks.classList.contains('is-open')));
   $$('a', navLinks).forEach((a) => a.addEventListener('click', () => setMenu(false)));
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setMenu(false); });
-  window.matchMedia('(min-width: 901px)').addEventListener('change', (e) => { if (e.matches) setMenu(false); });
+  desktopQuery.addEventListener('change', (e) => { if (e.matches) setMenu(false); placeInd(activeLink); });
+  nav.addEventListener('focusin', () => nav.classList.remove('nav--hide'));
+
+  // Penanda geser di belakang tautan (desktop)
+  const linkMap = new Map($$('[data-link]', navLinks).map((a) => [a.dataset.link, a]));
+  let activeLink = null;
+  let indReady = false;
+
+  function placeInd(a) {
+    if (!ind) return;
+    $$('[data-link]', navLinks).forEach((l) => l.classList.toggle('is-lit', desktopQuery.matches && l === a));
+    if (!desktopQuery.matches || !a) { ind.style.opacity = '0'; return; }
+    if (!indReady) {
+      ind.style.transition = 'none';
+      ind.style.width = a.offsetWidth + 'px';
+      ind.style.transform = `translateX(${a.offsetLeft}px)`;
+      void ind.offsetWidth;
+      ind.style.transition = '';
+      indReady = true;
+    } else {
+      ind.style.width = a.offsetWidth + 'px';
+      ind.style.transform = `translateX(${a.offsetLeft}px)`;
+    }
+    ind.style.opacity = '1';
+  }
+
+  linkMap.forEach((a) => {
+    a.addEventListener('pointerenter', () => { if (finePointer) placeInd(a); });
+  });
+  navLinks.addEventListener('pointerleave', () => placeInd(activeLink));
+  window.addEventListener('resize', () => placeInd(activeLink));
 
   // Tautan aktif sesuai bagian yang sedang dilihat
-  const linkMap = new Map($$('[data-link]').map((a) => [a.dataset.link, a]));
   const sectionObserver = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (!entry.isIntersecting) return;
       linkMap.forEach((a) => a.classList.remove('is-active'));
-      linkMap.get(entry.target.id)?.classList.add('is-active');
+      activeLink = linkMap.get(entry.target.id) || null;
+      activeLink?.classList.add('is-active');
+      placeInd(activeLink);
     });
   }, { rootMargin: '-45% 0px -50% 0px' });
   $$('main section[id]').forEach((s) => sectionObserver.observe(s));
 
   /* ---------------------------------------------------------
-     4. SCROLL: indikator, nav, garis langkah
+     4. SCROLL: indikator, nav, hero, pita berjalan
      --------------------------------------------------------- */
-  const steps = $('#steps');
   const heroEl = $('.hero');
+  const marquee = $('#marquee');
   const toTop = $('#toTop');
   const toTopRing = $('#toTopRing');
   const RING = 131.95;
   let ticking = false;
+  let lastY = window.scrollY;
+  let navLockUntil = 0;
+
+  // Pita miring ikut bereaksi pada kecepatan scroll
+  let skew = 0, skewLast = window.scrollY, skewRunning = false;
+  function skewLoop() {
+    const y = window.scrollY;
+    const v = y - skewLast;
+    skewLast = y;
+    skew += (clamp(v * -0.22, -6, 6) - skew) * 0.14;
+    marquee.style.setProperty('--skew', skew.toFixed(2) + 'deg');
+    if (Math.abs(skew) > 0.03 || Math.abs(v) > 0.2) requestAnimationFrame(skewLoop);
+    else { skewRunning = false; marquee.style.setProperty('--skew', '0deg'); }
+  }
 
   function onScroll() {
     const y = window.scrollY;
@@ -133,6 +179,14 @@ const CONFIG = {
     nav.classList.toggle('is-scrolled', y > 24);
     const ratio = max > 0 ? clamp(y / max, 0, 1) : 0;
     progress.style.transform = `scaleX(${ratio})`;
+
+    // nav bersembunyi saat scroll turun, muncul lagi saat scroll naik
+    if (performance.now() > navLockUntil && !navLinks.classList.contains('is-open')) {
+      const dy = y - lastY;
+      if (y > 520 && dy > 6) nav.classList.add('nav--hide');
+      else if (dy < -6 || y <= 520) nav.classList.remove('nav--hide');
+    }
+    lastY = y;
 
     if (heroEl && y < heroEl.offsetHeight) {
       heroEl.style.setProperty('--sy', y.toFixed(1));
@@ -142,12 +196,7 @@ const CONFIG = {
       toTop.classList.toggle('show', y > 500);
       toTopRing.style.strokeDashoffset = (RING * (1 - ratio)).toFixed(2);
     }
-
-    if (steps) {
-      const r = steps.getBoundingClientRect();
-      const p = clamp((window.innerHeight * 0.72 - r.top) / (r.height * 0.9), 0, 1);
-      steps.style.setProperty('--p', p.toFixed(3));
-    }
+    if (marquee && !reduceMotion && !skewRunning) { skewRunning = true; skewLast = y; requestAnimationFrame(skewLoop); }
     ticking = false;
   }
 
@@ -158,7 +207,7 @@ const CONFIG = {
   onScroll();
 
   /* ---------------------------------------------------------
-     5. REVEAL SAAT SCROLL + ANGKA BERJALAN
+     5. REVEAL SAAT SCROLL + ANGKA BERJALAN + LANGKAH PASANG
      --------------------------------------------------------- */
   const formatID = (n) => new Intl.NumberFormat('id-ID').format(Math.round(n));
 
@@ -186,11 +235,21 @@ const CONFIG = {
   }, { threshold: 0.15, rootMargin: '0px 0px -6% 0px' });
   $$('[data-reveal]').forEach((el) => revealObserver.observe(el));
 
+  // Langkah pasang menyala satu per satu seperti bar sinyal
+  const stepObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add('is-on');
+      stepObserver.unobserve(entry.target);
+    });
+  }, { threshold: 0.25, rootMargin: '0px 0px -8% 0px' });
+  $$('.step').forEach((el) => stepObserver.observe(el));
+
   /* ---------------------------------------------------------
      6. HERO: efek parallax mengikuti kursor
      --------------------------------------------------------- */
   const orbit = $('#orbit');
-  if (orbit && !reduceMotion && window.matchMedia('(pointer: fine)').matches) {
+  if (orbit && !reduceMotion && finePointer) {
     const layers = $$('[data-depth]', orbit);
     const hero = $('.hero');
     hero.addEventListener('pointermove', (e) => {
@@ -207,16 +266,18 @@ const CONFIG = {
   }
 
   /* ---------------------------------------------------------
-     7. KARTU PAKET: efek miring 3D
+     7. KARTU PAKET: efek miring 3D + kilau
      --------------------------------------------------------- */
   const card = $('#priceCard');
-  if (card && !reduceMotion && window.matchMedia('(pointer: fine)').matches) {
+  if (card && !reduceMotion && finePointer) {
     card.addEventListener('pointermove', (e) => {
       const r = card.getBoundingClientRect();
       const x = (e.clientX - r.left) / r.width - 0.5;
       const y = (e.clientY - r.top) / r.height - 0.5;
       card.style.setProperty('--ry', `${(x * 9).toFixed(2)}deg`);
       card.style.setProperty('--rx', `${(y * -9).toFixed(2)}deg`);
+      card.style.setProperty('--mx', `${((x + 0.5) * 100).toFixed(1)}%`);
+      card.style.setProperty('--my', `${((y + 0.5) * 100).toFixed(1)}%`);
     });
     card.addEventListener('pointerleave', () => {
       card.style.setProperty('--rx', '0deg');
@@ -231,36 +292,47 @@ const CONFIG = {
   const checker = $('#checker');
   const areaInput = $('#areaInput');
   const result = $('#checkerResult');
+  const mapNodes = $$('.node');
   const normalize = (s) => s.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
 
   if (areaList) {
-    areaList.innerHTML = CONFIG.areas.map((name) => `<li>${name}</li>`).join('');
+    areaList.innerHTML = CONFIG.areas.map((name, i) => `<li style="--i:${i}">${name}</li>`).join('');
   }
+
+  const clearMatches = () => {
+    $$('li', areaList).forEach((li) => li.classList.remove('is-match'));
+    mapNodes.forEach((n) => n.classList.remove('is-hit'));
+  };
 
   function showResult(type, html) {
     result.className = `checker__result ${type}`;
     result.innerHTML = html;
-    requestAnimationFrame(() => result.classList.add('show'));
+    requestAnimationFrame(() => requestAnimationFrame(() => result.classList.add('show')));
   }
 
   if (checker) {
     checker.addEventListener('submit', (e) => {
       e.preventDefault();
       const query = normalize(areaInput.value);
-      $$('li', areaList).forEach((li) => li.classList.remove('is-match'));
+      clearMatches();
 
       if (query.length < 3) {
         showResult('no', 'Ketik minimal 3 huruf nama desa, kelurahan, atau perumahan Anda.');
         return;
       }
 
-      const matches = $$('li', areaList).filter((li) => {
+      const items = $$('li', areaList);
+      const matches = items.filter((li) => {
         const name = normalize(li.textContent);
         return name.includes(query) || query.includes(name);
       });
 
       if (matches.length) {
-        matches.forEach((li) => li.classList.add('is-match'));
+        matches.forEach((li) => {
+          li.classList.add('is-match');
+          const node = mapNodes[items.indexOf(li) % (mapNodes.length || 1)];
+          node?.classList.add('is-hit');
+        });
         showResult('ok', `Kabar baik, area ${matches[0].textContent} sudah terjangkau Aura Net.`);
       } else {
         const msg = encodeURIComponent(`Halo Aura Net, saya ingin mengecek apakah area ${areaInput.value.trim()} sudah terjangkau.`);
@@ -271,7 +343,7 @@ const CONFIG = {
     areaInput.addEventListener('input', () => {
       if (!areaInput.value) {
         result.classList.remove('show');
-        $$('li', areaList).forEach((li) => li.classList.remove('is-match'));
+        clearMatches();
       }
     });
   }
@@ -391,7 +463,7 @@ const CONFIG = {
   }
 
   /* ---------------------------------------------------------
-     12. TRANSISI PINDAH BAGIAN (tirai) + KEMBALI KE ATAS
+     12. TRANSISI PINDAH BAGIAN (bar sinyal) + KEMBALI KE ATAS
      --------------------------------------------------------- */
   const wipe = $('#wipe');
   let wiping = false;
@@ -415,7 +487,10 @@ const CONFIG = {
     wipe.classList.add('is-in');
 
     setTimeout(() => {
+      navLockUntil = performance.now() + 600;
       jumpTo(target);
+      nav.classList.remove('nav--hide');
+      lastY = window.scrollY;
       if (hash !== '#top') history.replaceState(null, '', hash);
       wipe.classList.add('is-out');
 
@@ -425,8 +500,8 @@ const CONFIG = {
         void wipe.offsetWidth;
         wipe.classList.remove('no-anim');
         wiping = false;
-      }, 700);
-    }, 680);
+      }, 760);
+    }, 760);
   }
 
   document.addEventListener('click', (e) => {
@@ -444,23 +519,22 @@ const CONFIG = {
   });
 
   /* ---------------------------------------------------------
-     13. SOROTAN KURSOR + TOMBOL MAGNETIK (perangkat dengan mouse)
+     13. KURSOR CINCIN + TOMBOL MAGNETIK (perangkat dengan mouse)
      --------------------------------------------------------- */
-  const finePointer = window.matchMedia('(pointer: fine)').matches;
-
   const spot = $('#spotlight');
   if (spot && finePointer && !reduceMotion) {
     let tx = 0, ty = 0, cx = 0, cy = 0, running = false;
     const loop = () => {
-      cx += (tx - cx) * 0.12;
-      cy += (ty - cy) * 0.12;
+      cx += (tx - cx) * 0.2;
+      cy += (ty - cy) * 0.2;
       spot.style.transform = `translate3d(${cx}px, ${cy}px, 0)`;
-      if (Math.abs(tx - cx) < 0.5 && Math.abs(ty - cy) < 0.5) { running = false; return; }
+      if (Math.abs(tx - cx) < 0.3 && Math.abs(ty - cy) < 0.3) { running = false; return; }
       requestAnimationFrame(loop);
     };
     window.addEventListener('pointermove', (e) => {
       tx = e.clientX; ty = e.clientY;
       spot.style.opacity = '1';
+      spot.classList.toggle('is-hover', !!e.target.closest('a, button, input, textarea, .faq__q, .chips li'));
       if (!running) { running = true; requestAnimationFrame(loop); }
     }, { passive: true });
     document.documentElement.addEventListener('pointerleave', () => { spot.style.opacity = '0'; });
