@@ -402,6 +402,9 @@ h1, h2, h3 {
 .section--sun { background: var(--sun); color: var(--ink); }
 .section--peach { background: var(--peach); color: var(--ink); }
 .section--last { padding-bottom: 190px; }
+/* pengaman: elemen yang bergeser (reveal) tidak boleh melebarkan halaman ke samping.
+   clip-path saja tidak memotong area scroll; overflow-x: clip memotongnya tanpa merusak sticky */
+@supports (overflow: clip) { .section { overflow-x: clip; } }
 
 .section h2 { font-size: clamp(2.3rem, 5vw, 4.1rem); font-stretch: 78%; line-height: .98; letter-spacing: -.03em; }
 .section__head { max-width: 720px; margin-bottom: 56px; }
@@ -738,7 +741,8 @@ section[id] { scroll-margin-top: 0; }
 .register__note { margin-top: 16px; font-size: .88rem; color: var(--ink-3); }
 
 .wave { position: absolute; left: 0; right: 0; bottom: -1px; height: 96px; overflow: hidden; pointer-events: none; }
-.wave__layer { position: absolute; left: 0; bottom: 0; width: 200%; height: 100%; animation: waveMove 16s linear infinite; }
+/* width 200% wajib bisa melebihi induknya supaya loop -50% mulus; reset global `svg { max-width:100% }` harus dimatikan di sini */
+.wave__layer { position: absolute; left: 0; bottom: 0; width: 200%; max-width: none; height: 100%; animation: waveMove 16s linear infinite; will-change: transform; }
 .wave__layer--back { fill: var(--blue); animation-duration: 22s; animation-direction: reverse; height: 100%; }
 .wave__layer--front { fill: var(--ink); height: 72%; }
 @keyframes waveMove { to { transform: translateX(-50%); } }
@@ -880,6 +884,9 @@ section[id] { scroll-margin-top: 0; }
   .hero__visual { width: min(100%, 440px); margin-inline: auto; }
   .chip--speed { left: -2%; }
   .chip--price { right: -2%; }
+
+  /* layout 1 kolom: reveal dari kiri/kanan diganti naik dari bawah supaya tidak melebarkan halaman */
+  .js [data-reveal="left"], .js [data-reveal="right"] { transform: translate3d(0, 40px, 0); }
 
   .section__head--row { grid-template-columns: 1fr; gap: 18px; }
   .split, .paket, .area, .daftar { grid-template-columns: 1fr; gap: 48px; }
