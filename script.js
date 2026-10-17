@@ -1,5 +1,5 @@
 /* =========================================================
-   AURA NET — script.js (fitur sama, ditambah efek aurora & cahaya kursor)
+   AURA NET — script.js
    ========================================================= */
 
 /* ---------------------------------------------------------
@@ -188,7 +188,7 @@ const CONFIG = {
     }
     lastY = y;
 
-    if (false) {
+    if (heroEl && y < heroEl.offsetHeight) {
       heroEl.style.setProperty('--sy', y.toFixed(1));
       heroEl.style.setProperty('--fade', clamp(1 - y / (heroEl.offsetHeight * 0.8), 0, 1).toFixed(3));
     }
@@ -196,7 +196,7 @@ const CONFIG = {
       toTop.classList.toggle('show', y > 500);
       toTopRing.style.strokeDashoffset = (RING * (1 - ratio)).toFixed(2);
     }
-    if (false) { skewRunning = true; skewLast = y; requestAnimationFrame(skewLoop); }
+    if (marquee && !reduceMotion && !skewRunning) { skewRunning = true; skewLast = y; requestAnimationFrame(skewLoop); }
     ticking = false;
   }
 
@@ -549,19 +549,6 @@ const CONFIG = {
         btn.style.translate = `${(x * 0.16).toFixed(1)}px ${(y * 0.28).toFixed(1)}px`;
       });
       btn.addEventListener('pointerleave', () => { btn.style.translate = ''; });
-    });
-  }
-
-  /* ---------------------------------------------------------
-     13b. EFEK BARU: aurora mengikuti kursor + cahaya di kartu
-     --------------------------------------------------------- */
-  if (finePointer && !reduceMotion) {
-    $$('.feature').forEach((f) => {
-      f.addEventListener('pointermove', (e) => {
-        const r = f.getBoundingClientRect();
-        f.style.setProperty('--mx', (e.clientX - r.left) + 'px');
-        f.style.setProperty('--my', (e.clientY - r.top) + 'px');
-      });
     });
   }
 
