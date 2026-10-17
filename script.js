@@ -1,5 +1,5 @@
 /* =========================================================
-   AURA NET — script.js
+   AURA NET — script.js (fitur sama, ditambah efek aurora & cahaya kursor)
    ========================================================= */
 
 /* ---------------------------------------------------------
@@ -8,12 +8,8 @@
 const CONFIG = {
   // Daftar wilayah yang sudah terjangkau (ganti dengan nama asli)
   areas: [
-    'Desa Contoh A',
-    'Desa Contoh B',
-    'Kelurahan Contoh C',
-    'Perumahan Contoh D',
-    'Dusun Contoh E',
-    'Kecamatan Contoh F'
+    'Parit Masigi 1',
+    'Jalan Kemuning',
   ],
   phoneDisplay: '0895 6300 94597',
   whatsappNumber: '62895630094597',
@@ -33,34 +29,23 @@ const CONFIG = {
   const loader = $('#loader');
 
   /* ---------------------------------------------------------
-     1. LOADING AWAL (logo membangun diri, tulisan tumbuh, bar, tirai naik)
+     1. LOADING AWAL
      --------------------------------------------------------- */
   const MIN_LOADING = reduceMotion ? 0 : 3900; // durasi minimum animasi (ms)
   const startedAt = performance.now();
-  const pctEl = $('#loaderPct');
   let finished = false;
-
-  function pctLoop() {
-    if (finished || !pctEl) return;
-    const t = clamp((performance.now() - startedAt) / 3600, 0, 1);
-    pctEl.textContent = Math.min(99, Math.floor((1 - Math.pow(1 - t, 3)) * 100));
-    requestAnimationFrame(pctLoop);
-  }
-  if (!reduceMotion) pctLoop();
 
   function finishLoading() {
     if (finished) return;
     finished = true;
-    if (pctEl) pctEl.textContent = '100';
     if (loader) loader.classList.add('is-done');
     body.classList.remove('is-loading');
     window.scrollTo(0, 0);
     setTimeout(() => {
       body.classList.add('is-ready');
       $('.fab')?.classList.add('show');
-      setTimeout(() => $$('.hero [data-count]').forEach(countUp), reduceMotion ? 0 : 1200);
-    }, reduceMotion ? 0 : 500);
-    setTimeout(() => loader && loader.remove(), 1600);
+    }, reduceMotion ? 0 : 450);
+    setTimeout(() => loader && loader.remove(), 1500);
   }
 
   function scheduleFinish() {
@@ -73,22 +58,8 @@ const CONFIG = {
   setTimeout(finishLoading, 8000); // pengaman jika sumber daya lambat
 
   /* ---------------------------------------------------------
-     2. JUDUL: hero per huruf, judul bagian per kata
+     2. JUDUL — muncul per kata (hero + judul tiap bagian)
      --------------------------------------------------------- */
-  const heroTitle = $('#heroTitle');
-  if (heroTitle) {
-    const lines = $$('.ln', heroTitle);
-    heroTitle.setAttribute('aria-label', lines.map((l) => l.textContent.trim()).join(' '));
-    lines.forEach((ln, li) => {
-      const text = ln.textContent.trim();
-      ln.style.setProperty('--l', li);
-      ln.setAttribute('aria-hidden', 'true');
-      ln.innerHTML = Array.from(text)
-        .map((c, i) => (c === ' ' ? ' ' : `<span class="ch" style="--i:${i}">${c}</span>`))
-        .join('');
-    });
-  }
-
   function splitWords(el) {
     const text = el.textContent.trim();
     el.setAttribute('aria-label', text);
@@ -98,7 +69,10 @@ const CONFIG = {
       .join(' ');
   }
 
-  const sectionTitles = $$('.sheet h2');
+  const title = $('[data-split]');
+  if (title) splitWords(title);
+
+  const sectionTitles = $$('.section h2');
   sectionTitles.forEach((h) => { splitWords(h); h.classList.add('reveal-words'); });
   const titleObserver = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
@@ -106,106 +80,97 @@ const CONFIG = {
       entry.target.classList.add('in');
       titleObserver.unobserve(entry.target);
     });
-  }, { threshold: 0.4 });
+  }, { threshold: 0.5 });
   sectionTitles.forEach((h) => titleObserver.observe(h));
 
   /* ---------------------------------------------------------
-     3. NAVIGASI + MENU LAYAR PENUH
+     3. NAVIGASI (pil melayang + penanda geser)
      --------------------------------------------------------- */
   const nav = $('#nav');
   const navLinks = $('#navLinks');
   const navToggle = $('#navToggle');
-  const menu = $('#menu');
   const progress = $('#progress');
-  const dot = $('.nav__dot', navLinks);
+  const ind = $('.nav__ind', navLinks);
   const desktopQuery = window.matchMedia('(min-width: 901px)');
 
   function setMenu(open) {
-    menu.classList.toggle('is-open', open);
-    menu.setAttribute('aria-hidden', String(!open));
+    navLinks.classList.toggle('is-open', open);
     nav.classList.toggle('menu-open', open);
     navToggle.setAttribute('aria-expanded', String(open));
     navToggle.setAttribute('aria-label', open ? 'Tutup menu' : 'Buka menu');
     body.style.overflow = open ? 'hidden' : '';
     if (open) nav.classList.remove('nav--hide');
   }
-  navToggle.addEventListener('click', () => setMenu(!menu.classList.contains('is-open')));
-  $$('a', menu).forEach((a) => a.addEventListener('click', () => setMenu(false)));
+
+  navToggle.addEventListener('click', () => setMenu(!navLinks.classList.contains('is-open')));
+  $$('a', navLinks).forEach((a) => a.addEventListener('click', () => setMenu(false)));
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setMenu(false); });
+  desktopQuery.addEventListener('change', (e) => { if (e.matches) setMenu(false); placeInd(activeLink); });
   nav.addEventListener('focusin', () => nav.classList.remove('nav--hide'));
 
-  // Titik penanda geser di bawah tautan aktif (desktop)
+  // Penanda geser di belakang tautan (desktop)
   const linkMap = new Map($$('[data-link]', navLinks).map((a) => [a.dataset.link, a]));
   let activeLink = null;
-  let dotReady = false;
+  let indReady = false;
 
-  function placeDot(a) {
-    if (!dot) return;
-    if (!desktopQuery.matches || !a) { dot.style.opacity = '0'; return; }
-    const x = a.offsetLeft + a.offsetWidth / 2 - 3;
-    if (!dotReady) {
-      dot.style.transition = 'none';
-      dot.style.transform = `translateX(${x}px)`;
-      void dot.offsetWidth;
-      dot.style.transition = '';
-      dotReady = true;
+  function placeInd(a) {
+    if (!ind) return;
+    $$('[data-link]', navLinks).forEach((l) => l.classList.toggle('is-lit', desktopQuery.matches && l === a));
+    if (!desktopQuery.matches || !a) { ind.style.opacity = '0'; return; }
+    if (!indReady) {
+      ind.style.transition = 'none';
+      ind.style.width = a.offsetWidth + 'px';
+      ind.style.transform = `translateX(${a.offsetLeft}px)`;
+      void ind.offsetWidth;
+      ind.style.transition = '';
+      indReady = true;
     } else {
-      dot.style.transform = `translateX(${x}px)`;
+      ind.style.width = a.offsetWidth + 'px';
+      ind.style.transform = `translateX(${a.offsetLeft}px)`;
     }
-    dot.style.opacity = '1';
+    ind.style.opacity = '1';
   }
-  desktopQuery.addEventListener('change', (e) => { if (e.matches) setMenu(false); placeDot(activeLink); });
-  window.addEventListener('resize', () => placeDot(activeLink));
-  linkMap.forEach((a) => a.addEventListener('pointerenter', () => { if (finePointer) placeDot(a); }));
-  navLinks.addEventListener('pointerleave', () => placeDot(activeLink));
 
+  linkMap.forEach((a) => {
+    a.addEventListener('pointerenter', () => { if (finePointer) placeInd(a); });
+  });
+  navLinks.addEventListener('pointerleave', () => placeInd(activeLink));
+  window.addEventListener('resize', () => placeInd(activeLink));
+
+  // Tautan aktif sesuai bagian yang sedang dilihat
   const sectionObserver = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (!entry.isIntersecting) return;
       linkMap.forEach((a) => a.classList.remove('is-active'));
       activeLink = linkMap.get(entry.target.id) || null;
       activeLink?.classList.add('is-active');
-      placeDot(activeLink);
+      placeInd(activeLink);
     });
   }, { rootMargin: '-45% 0px -50% 0px' });
   $$('main section[id]').forEach((s) => sectionObserver.observe(s));
 
   /* ---------------------------------------------------------
-     4. SCROLL: indikator, nav, hero, kartu bertumpuk, garis waktu
+     4. SCROLL: indikator, nav, hero, pita berjalan
      --------------------------------------------------------- */
   const heroEl = $('.hero');
+  const marquee = $('#marquee');
   const toTop = $('#toTop');
   const toTopRing = $('#toTopRing');
   const RING = 131.95;
-  const stackEl = $('#stack');
-  const cards = $$('.scard');
-  const timeline = $('#steps');
-  const tlRows = $$('.tl');
   let ticking = false;
   let lastY = window.scrollY;
   let navLockUntil = 0;
 
-  function updateStack() {
-    if (!stackEl || cards.length < 2) return;
-    const rect = stackEl.getBoundingClientRect();
-    if (rect.bottom < -300 || rect.top > window.innerHeight + 300) return;
-    cards.forEach((card, i) => {
-      const next = cards[i + 1];
-      if (!next) return;
-      const top = parseFloat(getComputedStyle(card).top) || 0;
-      const nextTop = next.getBoundingClientRect().top;
-      const t = clamp(1 - (nextTop - (top + 16)) / (card.offsetHeight + 12), 0, 1);
-      card.style.setProperty('--t', t.toFixed(3));
-    });
-  }
-
-  function updateTimeline() {
-    if (!timeline) return;
-    const vh = window.innerHeight;
-    const r = timeline.getBoundingClientRect();
-    if (r.bottom < -200 || r.top > vh + 200) return;
-    timeline.style.setProperty('--p', clamp((vh * 0.6 - r.top) / r.height, 0, 1).toFixed(3));
-    tlRows.forEach((row) => row.classList.toggle('is-on', row.getBoundingClientRect().top < vh * 0.62));
+  // Pita miring ikut bereaksi pada kecepatan scroll
+  let skew = 0, skewLast = window.scrollY, skewRunning = false;
+  function skewLoop() {
+    const y = window.scrollY;
+    const v = y - skewLast;
+    skewLast = y;
+    skew += (clamp(v * -0.22, -6, 6) - skew) * 0.14;
+    marquee.style.setProperty('--skew', skew.toFixed(2) + 'deg');
+    if (Math.abs(skew) > 0.03 || Math.abs(v) > 0.2) requestAnimationFrame(skewLoop);
+    else { skewRunning = false; marquee.style.setProperty('--skew', '0deg'); }
   }
 
   function onScroll() {
@@ -216,7 +181,7 @@ const CONFIG = {
     progress.style.transform = `scaleX(${ratio})`;
 
     // nav bersembunyi saat scroll turun, muncul lagi saat scroll naik
-    if (performance.now() > navLockUntil && !menu.classList.contains('is-open')) {
+    if (performance.now() > navLockUntil && !navLinks.classList.contains('is-open')) {
       const dy = y - lastY;
       if (y > 520 && dy > 6) nav.classList.add('nav--hide');
       else if (dy < -6 || y <= 520) nav.classList.remove('nav--hide');
@@ -225,14 +190,13 @@ const CONFIG = {
 
     if (heroEl && y < heroEl.offsetHeight) {
       heroEl.style.setProperty('--sy', y.toFixed(1));
-      heroEl.style.setProperty('--fade', clamp(1 - y / (heroEl.offsetHeight * 0.75), 0, 1).toFixed(3));
+      heroEl.style.setProperty('--fade', clamp(1 - y / (heroEl.offsetHeight * 0.8), 0, 1).toFixed(3));
     }
     if (toTop) {
       toTop.classList.toggle('show', y > 500);
       toTopRing.style.strokeDashoffset = (RING * (1 - ratio)).toFixed(2);
     }
-    updateStack();
-    updateTimeline();
+    if (marquee && !reduceMotion && !skewRunning) { skewRunning = true; skewLast = y; requestAnimationFrame(skewLoop); }
     ticking = false;
   }
 
@@ -243,18 +207,19 @@ const CONFIG = {
   onScroll();
 
   /* ---------------------------------------------------------
-     5. REVEAL SAAT SCROLL + ANGKA BERJALAN
+     5. REVEAL SAAT SCROLL + ANGKA BERJALAN + LANGKAH PASANG
      --------------------------------------------------------- */
   const formatID = (n) => new Intl.NumberFormat('id-ID').format(Math.round(n));
 
   function countUp(el) {
     const target = Number(el.dataset.count);
     if (!target || reduceMotion) return;
-    const duration = 1800;
+    const duration = 1600;
     const t0 = performance.now();
     const tick = (now) => {
       const t = clamp((now - t0) / duration, 0, 1);
-      el.textContent = formatID(target * (1 - Math.pow(1 - t, 4)));
+      const eased = 1 - Math.pow(1 - t, 4);
+      el.textContent = formatID(target * eased);
       if (t < 1) requestAnimationFrame(tick);
     };
     requestAnimationFrame(tick);
@@ -264,175 +229,44 @@ const CONFIG = {
     entries.forEach((entry) => {
       if (!entry.isIntersecting) return;
       entry.target.classList.add('in');
-      if (entry.target.matches('[data-count]')) countUp(entry.target);
       $$('[data-count]', entry.target).forEach(countUp);
       revealObserver.unobserve(entry.target);
     });
   }, { threshold: 0.15, rootMargin: '0px 0px -6% 0px' });
   $$('[data-reveal]').forEach((el) => revealObserver.observe(el));
 
-  // kartu keunggulan & area: tandai saat terlihat (memicu animasi isi)
-  const viewObserver = new IntersectionObserver((entries) => {
+  // Langkah pasang menyala satu per satu seperti bar sinyal
+  const stepObserver = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (!entry.isIntersecting) return;
-      entry.target.classList.add('in');
-      viewObserver.unobserve(entry.target);
+      entry.target.classList.add('is-on');
+      stepObserver.unobserve(entry.target);
     });
-  }, { threshold: 0.3 });
-  $$('.scard, .area__copy').forEach((el) => viewObserver.observe(el));
+  }, { threshold: 0.25, rootMargin: '0px 0px -8% 0px' });
+  $$('.step').forEach((el) => stepObserver.observe(el));
 
   /* ---------------------------------------------------------
-     6. HERO: gelombang sinyal (kanvas) + riak mengikuti kursor
+     6. HERO: efek parallax mengikuti kursor
      --------------------------------------------------------- */
-  (function initSignal() {
-    const canvas = $('#heroCanvas');
-    if (!canvas || !canvas.getContext) return;
-    const ctx = canvas.getContext('2d');
-    let w = 0, h = 0, ox = 0, oy = 0, maxR = 0;
-    let running = false, visible = true, lastSpawn = { x: -999, y: -999 };
-    const ripples = [];
-
-    function size() {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      w = canvas.clientWidth; h = canvas.clientHeight;
-      canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      const narrow = w < 760;
-      ox = w * (narrow ? 0.5 : 0.76);
-      oy = h * (narrow ? 0.62 : 0.46);
-      maxR = Math.hypot(Math.max(ox, w - ox), Math.max(oy, h - oy));
-    }
-
-    function draw(t) {
-      ctx.clearRect(0, 0, w, h);
-      const base = Math.min(w, h);
-      // cincin diam
-      for (let i = 1; i <= 5; i++) {
-        ctx.beginPath();
-        ctx.arc(ox, oy, i * base * 0.17, 0, Math.PI * 2);
-        ctx.strokeStyle = `rgba(255,255,255,${0.075 - i * 0.01})`;
-        ctx.lineWidth = 1;
-        ctx.stroke();
-      }
-      // cincin sinyal yang merambat keluar
-      const N = 5;
-      for (let k = 0; k < N; k++) {
-        const phase = ((t / 9000) + k / N) % 1;
-        const r = phase * maxR;
-        const a = Math.pow(1 - phase, 1.8) * 0.55;
-        ctx.beginPath();
-        ctx.arc(ox, oy, r, 0, Math.PI * 2);
-        ctx.strokeStyle = `rgba(255,165,134,${a.toFixed(3)})`;
-        ctx.lineWidth = 1 + (1 - phase) * 2.4;
-        ctx.stroke();
-      }
-      // sumber sinyal
-      const g = ctx.createRadialGradient(ox, oy, 0, ox, oy, 90);
-      g.addColorStop(0, 'rgba(255,165,134,.42)');
-      g.addColorStop(1, 'rgba(255,165,134,0)');
-      ctx.fillStyle = g;
-      ctx.beginPath(); ctx.arc(ox, oy, 90, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = '#fff';
-      ctx.beginPath(); ctx.arc(ox, oy, 5, 0, Math.PI * 2); ctx.fill();
-      // riak dari kursor / sentuhan
-      for (let i = ripples.length - 1; i >= 0; i--) {
-        const p = ripples[i];
-        const age = (t - p.born) / 1700;
-        if (age >= 1) { ripples.splice(i, 1); continue; }
-        const e = 1 - Math.pow(1 - age, 3);
-        [1, 0.62].forEach((m, j) => {
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, e * p.size * m, 0, Math.PI * 2);
-          ctx.strokeStyle = `rgba(255,255,255,${((1 - age) * (j ? 0.25 : 0.5)).toFixed(3)})`;
-          ctx.lineWidth = 1.5;
-          ctx.stroke();
-        });
-      }
-    }
-
-    function frame(t) {
-      draw(t);
-      if (visible && !reduceMotion) requestAnimationFrame(frame);
-      else running = false;
-    }
-    function start() {
-      if (running || reduceMotion) return;
-      running = true;
-      requestAnimationFrame(frame);
-    }
-
-    function spawn(e, size2) {
-      const r = canvas.getBoundingClientRect();
-      ripples.push({ x: e.clientX - r.left, y: e.clientY - r.top, born: performance.now(), size: size2 });
-      if (ripples.length > 14) ripples.shift();
-      start();
-    }
-
-    size();
-    draw(2000);
-    window.addEventListener('resize', () => { size(); draw(performance.now()); });
-    new IntersectionObserver(([entry]) => {
-      visible = entry.isIntersecting;
-      if (visible) start();
-    }).observe(heroEl);
-    start();
-
-    if (!reduceMotion) {
-      heroEl.addEventListener('pointermove', (e) => {
-        if (e.pointerType === 'touch') return;
-        if (Math.hypot(e.clientX - lastSpawn.x, e.clientY - lastSpawn.y) < 80) return;
-        lastSpawn = { x: e.clientX, y: e.clientY };
-        spawn(e, 170);
-      }, { passive: true });
-      heroEl.addEventListener('pointerdown', (e) => {
-        if (e.target.closest('a, button')) return;
-        spawn(e, 320);
+  const orbit = $('#orbit');
+  if (orbit && !reduceMotion && finePointer) {
+    const layers = $$('[data-depth]', orbit);
+    const hero = $('.hero');
+    hero.addEventListener('pointermove', (e) => {
+      const rect = hero.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width - 0.5;
+      const y = (e.clientY - rect.top) / rect.height - 0.5;
+      layers.forEach((el) => {
+        const d = Number(el.dataset.depth);
+        el.style.transform = `translate3d(${x * d * -1.6}px, ${y * d * -1.6}px, 0)`;
       });
-    }
-  })();
+    });
+    hero.addEventListener('pointerleave', () => layers.forEach((el) => { el.style.transform = ''; }));
+    layers.forEach((el) => { el.style.transition = 'transform .5s cubic-bezier(.22,1,.36,1)'; });
+  }
 
   /* ---------------------------------------------------------
-     7. PITA BERJALAN: bergerak sendiri, bereaksi pada scroll
-     --------------------------------------------------------- */
-  (function initBand() {
-    const band = $('#band');
-    if (!band || reduceMotion) return;
-    const rows = $$('.band__row', band).map((el) => ({ el, dir: Number(el.dataset.dir) || -1, x: 0, w: 0 }));
-    let visible = true, lastScroll = window.scrollY, boost = 0, sign = 1;
-
-    function measure() {
-      rows.forEach((r) => {
-        const first = r.w === 0;
-        r.w = r.el.scrollWidth / 2;
-        r.x = first ? -r.w / 2 : ((r.x % r.w) - r.w) % r.w;
-      });
-    }
-    measure();
-    window.addEventListener('resize', measure);
-    window.addEventListener('load', measure);
-    new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; }).observe(band);
-
-    (function tick() {
-      if (visible) {
-        const y = window.scrollY;
-        const v = y - lastScroll;
-        lastScroll = y;
-        boost += (clamp(v, -50, 50) - boost) * 0.08;
-        if (Math.abs(boost) > 0.6) sign += ((boost > 0 ? 1 : -1) - sign) * 0.1;
-        const speed = 0.9 + Math.abs(boost) * 0.5;
-        rows.forEach((r) => {
-          r.x += r.dir * speed * sign;
-          if (r.x <= -r.w) r.x += r.w;
-          if (r.x > 0) r.x -= r.w;
-          r.el.style.transform = `translate3d(${r.x.toFixed(1)}px,0,0)`;
-        });
-      }
-      requestAnimationFrame(tick);
-    })();
-  })();
-
-  /* ---------------------------------------------------------
-     8. KARTU PAKET: miring 3D + sorot cahaya mengikuti kursor
+     7. KARTU PAKET: efek miring 3D + kilau
      --------------------------------------------------------- */
   const card = $('#priceCard');
   if (card && !reduceMotion && finePointer) {
@@ -440,8 +274,10 @@ const CONFIG = {
       const r = card.getBoundingClientRect();
       const x = (e.clientX - r.left) / r.width - 0.5;
       const y = (e.clientY - r.top) / r.height - 0.5;
-      card.style.setProperty('--ry', `${(x * 7).toFixed(2)}deg`);
-      card.style.setProperty('--rx', `${(y * -7).toFixed(2)}deg`);
+      card.style.setProperty('--ry', `${(x * 9).toFixed(2)}deg`);
+      card.style.setProperty('--rx', `${(y * -9).toFixed(2)}deg`);
+      card.style.setProperty('--mx', `${((x + 0.5) * 100).toFixed(1)}%`);
+      card.style.setProperty('--my', `${((y + 0.5) * 100).toFixed(1)}%`);
     });
     card.addEventListener('pointerleave', () => {
       card.style.setProperty('--rx', '0deg');
@@ -449,22 +285,14 @@ const CONFIG = {
     });
   }
 
-  document.addEventListener('pointermove', (e) => {
-    const g = e.target.closest ? e.target.closest('.glow') : null;
-    if (!g) return;
-    const r = g.getBoundingClientRect();
-    g.style.setProperty('--mx', `${(e.clientX - r.left).toFixed(0)}px`);
-    g.style.setProperty('--my', `${(e.clientY - r.top).toFixed(0)}px`);
-  }, { passive: true });
-
   /* ---------------------------------------------------------
-     9. AREA LAYANAN: daftar wilayah + pengecekan + radar
+     8. AREA LAYANAN: daftar wilayah + pengecekan
      --------------------------------------------------------- */
   const areaList = $('#areaList');
   const checker = $('#checker');
   const areaInput = $('#areaInput');
   const result = $('#checkerResult');
-  const blips = $$('.blip');
+  const mapNodes = $$('.node');
   const normalize = (s) => s.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
 
   if (areaList) {
@@ -473,7 +301,7 @@ const CONFIG = {
 
   const clearMatches = () => {
     $$('li', areaList).forEach((li) => li.classList.remove('is-match'));
-    blips.forEach((b) => b.classList.remove('is-hit'));
+    mapNodes.forEach((n) => n.classList.remove('is-hit'));
   };
 
   function showResult(type, html) {
@@ -502,7 +330,8 @@ const CONFIG = {
       if (matches.length) {
         matches.forEach((li) => {
           li.classList.add('is-match');
-          blips[items.indexOf(li) % (blips.length || 1)]?.classList.add('is-hit');
+          const node = mapNodes[items.indexOf(li) % (mapNodes.length || 1)];
+          node?.classList.add('is-hit');
         });
         showResult('ok', `Kabar baik, area ${matches[0].textContent} sudah terjangkau Aura Net.`);
       } else {
@@ -520,7 +349,7 @@ const CONFIG = {
   }
 
   /* ---------------------------------------------------------
-     10. FAQ (akordeon)
+     9. FAQ (akordeon)
      --------------------------------------------------------- */
   $$('.faq__q').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -538,7 +367,7 @@ const CONFIG = {
   });
 
   /* ---------------------------------------------------------
-     11. SALIN NOMOR + TOAST
+     10. SALIN NOMOR + TOAST
      --------------------------------------------------------- */
   const toast = $('#toast');
   let toastTimer;
@@ -567,7 +396,7 @@ const CONFIG = {
   });
 
   /* ---------------------------------------------------------
-     12. FORMULIR PENDAFTARAN -> WhatsApp
+     11. FORMULIR PENDAFTARAN -> WhatsApp
      --------------------------------------------------------- */
   const form = $('#registerForm');
   if (form) {
@@ -634,7 +463,7 @@ const CONFIG = {
   }
 
   /* ---------------------------------------------------------
-     13. TRANSISI PINDAH BAGIAN (iris melingkar) + KEMBALI KE ATAS
+     12. TRANSISI PINDAH BAGIAN (bar sinyal) + KEMBALI KE ATAS
      --------------------------------------------------------- */
   const wipe = $('#wipe');
   let wiping = false;
@@ -646,7 +475,7 @@ const CONFIG = {
     root.style.scrollBehavior = '';
   }
 
-  function goTo(hash, x, y) {
+  function goTo(hash) {
     const target = hash === '#top' ? document.body : $(hash);
     if (!target) return;
     if (reduceMotion || !wipe) {
@@ -655,12 +484,10 @@ const CONFIG = {
     }
     if (wiping) return;
     wiping = true;
-    wipe.style.setProperty('--x', `${x}px`);
-    wipe.style.setProperty('--y', `${y}px`);
     wipe.classList.add('is-in');
 
     setTimeout(() => {
-      navLockUntil = performance.now() + 700;
+      navLockUntil = performance.now() + 600;
       jumpTo(target);
       nav.classList.remove('nav--hide');
       lastY = window.scrollY;
@@ -673,8 +500,8 @@ const CONFIG = {
         void wipe.offsetWidth;
         wipe.classList.remove('no-anim');
         wiping = false;
-      }, 880);
-    }, 950);
+      }, 760);
+    }, 760);
   }
 
   document.addEventListener('click', (e) => {
@@ -684,10 +511,7 @@ const CONFIG = {
     if (hash.length < 2) return;
     e.preventDefault();
     setMenu(false);
-    const r = link.getBoundingClientRect();
-    const x = e.detail ? e.clientX : r.left + r.width / 2;
-    const y = e.detail ? e.clientY : r.top + r.height / 2;
-    goTo(hash, x, y);
+    goTo(hash);
   });
 
   toTop?.addEventListener('click', () => {
@@ -695,7 +519,7 @@ const CONFIG = {
   });
 
   /* ---------------------------------------------------------
-     14. KURSOR CINCIN + TOMBOL MAGNETIK (perangkat dengan mouse)
+     13. KURSOR CINCIN + TOMBOL MAGNETIK (perangkat dengan mouse)
      --------------------------------------------------------- */
   const spot = $('#spotlight');
   if (spot && finePointer && !reduceMotion) {
@@ -717,7 +541,7 @@ const CONFIG = {
   }
 
   if (finePointer && !reduceMotion) {
-    $$('.btn--lg, .nav__cta, .phone-box__actions .btn').forEach((btn) => {
+    $$('.btn--lg, .nav__cta, .btn--submit, .phone-box__actions .btn').forEach((btn) => {
       btn.addEventListener('pointermove', (e) => {
         const r = btn.getBoundingClientRect();
         const x = e.clientX - (r.left + r.width / 2);
@@ -729,7 +553,25 @@ const CONFIG = {
   }
 
   /* ---------------------------------------------------------
-     15. TAHUN DI FOOTER
+     13b. EFEK BARU: aurora mengikuti kursor + cahaya di kartu
+     --------------------------------------------------------- */
+  if (finePointer && !reduceMotion) {
+    const rootEl = document.documentElement;
+    window.addEventListener('pointermove', (e) => {
+      rootEl.style.setProperty('--px', (e.clientX / window.innerWidth - 0.5).toFixed(3));
+      rootEl.style.setProperty('--py', (e.clientY / window.innerHeight - 0.5).toFixed(3));
+    }, { passive: true });
+    $$('.feature').forEach((f) => {
+      f.addEventListener('pointermove', (e) => {
+        const r = f.getBoundingClientRect();
+        f.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+        f.style.setProperty('--my', (e.clientY - r.top) + 'px');
+      });
+    });
+  }
+
+  /* ---------------------------------------------------------
+     14. TAHUN DI FOOTER
      --------------------------------------------------------- */
   const year = $('#year');
   if (year) year.textContent = new Date().getFullYear();
