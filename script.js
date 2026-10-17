@@ -188,7 +188,7 @@ const CONFIG = {
     }
     lastY = y;
 
-    if (heroEl && y < heroEl.offsetHeight) {
+    if (false) {
       heroEl.style.setProperty('--sy', y.toFixed(1));
       heroEl.style.setProperty('--fade', clamp(1 - y / (heroEl.offsetHeight * 0.8), 0, 1).toFixed(3));
     }
@@ -196,7 +196,7 @@ const CONFIG = {
       toTop.classList.toggle('show', y > 500);
       toTopRing.style.strokeDashoffset = (RING * (1 - ratio)).toFixed(2);
     }
-    if (marquee && !reduceMotion && !skewRunning) { skewRunning = true; skewLast = y; requestAnimationFrame(skewLoop); }
+    if (false) { skewRunning = true; skewLast = y; requestAnimationFrame(skewLoop); }
     ticking = false;
   }
 
@@ -556,11 +556,6 @@ const CONFIG = {
      13b. EFEK BARU: aurora mengikuti kursor + cahaya di kartu
      --------------------------------------------------------- */
   if (finePointer && !reduceMotion) {
-    const rootEl = document.documentElement;
-    window.addEventListener('pointermove', (e) => {
-      rootEl.style.setProperty('--px', (e.clientX / window.innerWidth - 0.5).toFixed(3));
-      rootEl.style.setProperty('--py', (e.clientY / window.innerHeight - 0.5).toFixed(3));
-    }, { passive: true });
     $$('.feature').forEach((f) => {
       f.addEventListener('pointermove', (e) => {
         const r = f.getBoundingClientRect();
