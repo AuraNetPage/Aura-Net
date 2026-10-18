@@ -16,16 +16,17 @@
 
 <!-- Opening -->
 <div id="intro" aria-hidden="true">
-  <div class="intro-inner">
-    <svg class="intro-mark" viewBox="0 0 100 100" fill="none" stroke-linecap="round">
-      <path class="arc a3" d="M14 38 A52 52 0 0 1 86 38" pathLength="1"/>
-      <path class="arc a2" d="M26 52 A34 34 0 0 1 74 52" pathLength="1"/>
-      <path class="arc a1" d="M38 66 A16 16 0 0 1 62 66" pathLength="1"/>
-      <circle class="dot" cx="50" cy="82" r="6"/>
-    </svg>
-    <div class="intro-word"><span>A</span><span>u</span><span>r</span><span>a</span><span class="gap"></span><span>N</span><span>e</span><span>t</span></div>
+  <i class="bar"></i>
+  <div class="intro-stage">
+    <span class="ring"></span><span class="ring r2"></span><span class="ring r3"></span>
+    <div class="plate">
+      <svg viewBox="0 0 100 100"><path class="arc a3" d="M14 38 A52 52 0 0 1 86 38" pathLength="1"/><path class="arc a2" d="M26 52 A34 34 0 0 1 74 52" pathLength="1"/><path class="arc a1" d="M38 66 A16 16 0 0 1 62 66" pathLength="1"/><circle class="dot" cx="50" cy="82" r="6"/></svg>
+    </div>
+    <div class="word"><span><b style="--i:0">A</b><b style="--i:1">u</b><b style="--i:2">r</b><b style="--i:3">a</b></span><span><b style="--i:5">N</b><b style="--i:6">e</b><b style="--i:7">t</b></span></div>
   </div>
 </div>
+<div class="wipe" id="wipe" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><span id="wipeLabel"></span></div>
+<div class="progress" id="progress"></div>
 
 <header class="nav" id="nav">
   <a href="#beranda" class="brand" aria-label="Aura Net">
@@ -62,32 +63,39 @@
         <li>Konsultasi via telepon dan WhatsApp</li>
       </ul>
     </div>
-    <div class="hero-art" aria-hidden="true">
+    <div class="hero-art" id="art" aria-hidden="true">
+      <div class="blob"></div><div class="dash-ring"></div>
       <div class="waves"><i></i><i></i><i></i></div>
-      <svg class="router" viewBox="0 0 320 260" fill="none">
-        <g class="ant ant-l"><rect x="62" y="20" width="12" height="130" rx="6"/><circle cx="68" cy="20" r="9"/></g>
-        <g class="ant ant-r"><rect x="246" y="20" width="12" height="130" rx="6"/><circle cx="252" cy="20" r="9"/></g>
-        <rect class="body" x="20" y="140" width="280" height="90" rx="22"/>
-        <rect class="face" x="36" y="154" width="248" height="62" rx="14"/>
-        <circle class="led l1" cx="76" cy="185" r="7"/>
-        <circle class="led l2" cx="106" cy="185" r="7"/>
-        <circle class="led l3" cx="136" cy="185" r="7"/>
-        <circle class="led l4" cx="166" cy="185" r="7"/>
-        <text x="206" y="191" class="rt">Aura Net</text>
-        <rect class="foot" x="52" y="228" width="30" height="10" rx="4"/>
-        <rect class="foot" x="238" y="228" width="30" height="10" rx="4"/>
+      <svg class="router" viewBox="0 0 520 520" fill="none">
+        <path class="flow" d="M266 300C220 250 150 190 104 150"/>
+        <path class="flow" d="M266 300C330 240 400 200 440 170"/>
+        <path class="flow" d="M266 372C210 420 150 430 108 430"/>
+        <path class="flow" d="M266 372C330 420 390 430 430 430"/>
+        <circle r="6" fill="#ff7a3d"><animateMotion dur="2.2s" repeatCount="indefinite" path="M266 300C220 250 150 190 104 150"/></circle>
+        <circle r="6" fill="#ff7a3d"><animateMotion dur="2.6s" begin=".5s" repeatCount="indefinite" path="M266 300C330 240 400 200 440 170"/></circle>
+        <circle r="6" fill="#ff7a3d"><animateMotion dur="2.4s" begin="1s" repeatCount="indefinite" path="M266 372C210 420 150 430 108 430"/></circle>
+        <circle r="6" fill="#ff7a3d"><animateMotion dur="2.8s" begin=".2s" repeatCount="indefinite" path="M266 372C330 420 390 430 430 430"/></circle>
+        <g class="d d1"><rect class="dev" x="60" y="92" width="46" height="80" rx="10"/><rect class="scr" x="68" y="104" width="30" height="50" rx="4"/></g>
+        <g class="d d2"><rect class="dev" x="420" y="116" width="96" height="62" rx="8"/><rect class="scr" x="428" y="124" width="80" height="46" rx="3"/><rect class="dev" x="408" y="180" width="120" height="10" rx="5"/></g>
+        <g class="d d3"><rect class="dev" x="40" y="400" width="78" height="56" rx="10"/><rect class="scr" x="48" y="408" width="62" height="40" rx="4"/></g>
+        <g class="d d4"><rect class="dev" x="410" y="394" width="90" height="58" rx="8"/><rect class="scr" x="418" y="402" width="74" height="42" rx="3"/><rect class="dev" x="440" y="454" width="30" height="8" rx="4"/></g>
+        <g class="ant ant-l"><rect x="190" y="190" width="12" height="122" rx="6"/><circle cx="196" cy="190" r="9"/></g>
+        <g class="ant ant-r"><rect x="330" y="190" width="12" height="122" rx="6"/><circle cx="336" cy="190" r="9"/></g>
+        <g class="rg">
+          <rect class="body" x="140" y="300" width="250" height="76" rx="22"/>
+          <rect class="face" x="154" y="312" width="222" height="52" rx="14"/>
+          <circle class="led l1" cx="184" cy="338" r="7"/><circle class="led l2" cx="210" cy="338" r="7"/><circle class="led l3" cx="236" cy="338" r="7"/><circle class="led l4" cx="262" cy="338" r="7"/>
+          <text x="290" y="344" class="rt">Aura Net</text>
+        </g>
       </svg>
       <div class="chip chip-a"><b>10</b> Mbps</div>
       <div class="chip chip-b"><i class="live"></i>Terhubung</div>
     </div>
-  
   </section>
 
-  <div class="ticker" aria-label="Cocok untuk">
-    <div class="ticker-track">
-      <span>Streaming film</span><span>Video call</span><span>Belajar online</span><span>Kerja dari rumah</span><span>Media sosial</span><span>Usaha dan warung</span><span>Game ringan</span>
-      <span aria-hidden="true">Streaming film</span><span aria-hidden="true">Video call</span><span aria-hidden="true">Belajar online</span><span aria-hidden="true">Kerja dari rumah</span><span aria-hidden="true">Media sosial</span><span aria-hidden="true">Usaha dan warung</span><span aria-hidden="true">Game ringan</span>
-    </div>
+  <div class="bands" aria-label="Cocok untuk streaming, video call, belajar online, kerja dari rumah, dan usaha">
+    <div class="band b1"><div class="track" data-dir="-1"><span>Streaming film</span><span>Video call</span><span>Belajar online</span><span>Kerja dari rumah</span><span>Media sosial</span><span>Usaha dan warung</span><span>Game ringan</span></div></div>
+    <div class="band b2"><div class="track" data-dir="1"><span>10 Mbps</span><span>Rp150.000 per bulan</span><span>Tarif tetap</span><span>Pemasangan langsung</span></div></div>
   </div>
 
   <section class="sec" id="keunggulan">
@@ -96,10 +104,10 @@
       <p>Kami fokus pada hal yang paling dibutuhkan pelanggan: koneksi yang bisa diandalkan, harga yang jelas, dan bantuan yang mudah dijangkau.</p>
     </div>
     <div class="perks">
-      <article><h3>Koneksi yang stabil</h3><p>Jaringan dikelola dan dipantau supaya aktivitas harian Anda tetap lancar, dari streaming sampai rapat online.</p></article>
-      <article><h3>Harga yang jelas</h3><p>Satu tarif tetap per bulan, Rp150.000 untuk paket 10 Mbps. Mudah dihitung dan mudah dianggarkan.</p><strong class="tag">Rp150.000<small>/bulan</small></strong></article>
-      <article><h3>Pemasangan langsung</h3><p>Setelah survei lokasi, tim kami memasang jaringan ke rumah atau tempat usaha Anda.</p></article>
-      <article><h3>Bantuan mudah dijangkau</h3><p>Ada kendala atau pertanyaan? Hubungi kami lewat telepon atau WhatsApp kapan saja Anda butuh.</p></article>
+      <article><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M5 20v-5"/><path pathLength="1" d="M11 20V10"/><path pathLength="1" d="M17 20V4"/></svg><h3>Koneksi yang stabil</h3><p>Jaringan dikelola dan dipantau supaya aktivitas harian Anda tetap lancar, dari streaming sampai rapat online.</p></article>
+      <article><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M3 12V4h8l10 10-8 8z"/><circle pathLength="1" cx="7.5" cy="8.5" r="1.2"/></svg><h3>Harga yang jelas</h3><p>Satu tarif tetap per bulan, Rp150.000 untuk paket 10 Mbps. Mudah dihitung dan mudah dianggarkan.</p><strong class="tag">Rp150.000<small>/bulan</small></strong></article>
+      <article><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M3 11l9-7 9 7"/><path pathLength="1" d="M5 10v10h14V10"/><path pathLength="1" d="M10 20v-6h4v6"/></svg><h3>Pemasangan langsung</h3><p>Setelah survei lokasi, tim kami memasang jaringan ke rumah atau tempat usaha Anda.</p></article>
+      <article><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M4 14v-2a8 8 0 0 1 16 0v2"/><path pathLength="1" d="M4 14h3v5H4z"/><path pathLength="1" d="M17 14h3v5h-3z"/></svg><h3>Bantuan mudah dijangkau</h3><p>Ada kendala atau pertanyaan? Hubungi kami lewat telepon atau WhatsApp kapan saja Anda butuh.</p></article>
     </div>
   </section>
 
@@ -121,8 +129,8 @@
         <div class="plan-price">
           <span class="badge">Tersedia</span>
           <h3 class="plan-name">Paket Rumahan</h3>
-          <span class="speed">10 Mbps</span>
-          <span class="price"><sup>Rp</sup>150<small>.000</small><em>/bulan, tarif tetap</em></span>
+          <span class="speed"><span data-count="10">10</span> Mbps</span>
+          <span class="price"><sup>Rp</sup><span data-count="150">150</span><small>.000</small><em>/bulan, tarif tetap</em></span>
         </div>
         <ul class="plan-list">
           <li>Kecepatan hingga 10 Mbps</li>
