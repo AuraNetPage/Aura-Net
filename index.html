@@ -1,539 +1,230 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Aura Net — Internet Stabil dan Terjangkau</title>
-  <meta name="description" content="Aura Net menyediakan layanan internet dengan paket 10 Mbps hanya Rp150.000 per bulan. Cek area layanan dan hubungi kami untuk pemasangan.">
-  <meta name="theme-color" content="#161E2F">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-8 -8 116 116'%3E%3Crect x='-8' y='-8' width='116' height='116' rx='28' fill='%23161E2F'/%3E%3Ccircle cx='50' cy='50' r='30' fill='none' stroke='%23fff' stroke-width='6' stroke-linecap='round' pathLength='100' stroke-dasharray='66 34' transform='rotate(16 50 50)'/%3E%3Ccircle cx='50' cy='50' r='11' fill='%23fff'/%3E%3Ccircle cx='50' cy='50' r='41' fill='none' stroke='%23FFA586' stroke-width='5' stroke-linecap='round' pathLength='100' stroke-dasharray='22 78' transform='rotate(275.4 50 50)'/%3E%3C/svg%3E">
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
-
-  <script>document.documentElement.classList.add('js');</script>
-  <noscript><style>.loader{display:none!important}body.is-loading{overflow:auto!important}</style></noscript>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aura Net — Internet Stabil dan Terjangkau</title>
+<meta name="description" content="Aura Net menyediakan layanan internet paket 10 Mbps hanya Rp150.000 per bulan. Cek area layanan dan hubungi kami untuk pemasangan.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<meta name="theme-color" content="#071a20">
+<link rel="stylesheet" href="style.css">
 </head>
 <body class="is-loading">
+<a class="skip" href="#main">Lewati ke konten</a>
 
-  <a class="skip" href="#main">Lewati ke konten</a>
+<!-- Opening -->
+<div id="intro" aria-hidden="true">
+  <div class="intro-inner">
+    <svg class="intro-mark" viewBox="0 0 100 100" fill="none" stroke-linecap="round">
+      <path class="arc a3" d="M14 38 A52 52 0 0 1 86 38" pathLength="1"/>
+      <path class="arc a2" d="M26 52 A34 34 0 0 1 74 52" pathLength="1"/>
+      <path class="arc a1" d="M38 66 A16 16 0 0 1 62 66" pathLength="1"/>
+      <circle class="dot" cx="50" cy="82" r="6"/>
+    </svg>
+    <div class="intro-word"><span>A</span><span>u</span><span>r</span><span>a</span><span class="gap"></span><span>N</span><span>e</span><span>t</span></div>
+  </div>
+</div>
 
-  <!-- Simbol logo (dipakai ulang di navigasi, hero, footer, dan transisi) -->
-  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-    <symbol id="logo-mark" viewBox="-8 -8 116 116">
-      <circle cx="50" cy="50" r="30" fill="none" stroke="currentColor" stroke-width="5.5" stroke-linecap="round" pathLength="100" stroke-dasharray="66 34" transform="rotate(16 50 50)"/>
-      <circle cx="50" cy="50" r="11" fill="currentColor"/>
-      <circle cx="50" cy="50" r="41" fill="none" stroke="#FFA586" stroke-width="4.5" stroke-linecap="round" pathLength="100" stroke-dasharray="22 78" transform="rotate(275.4 50 50)"/>
-      <circle cx="50" cy="50" r="51" fill="none" stroke="#FFA586" stroke-width="3.5" stroke-linecap="round" pathLength="100" stroke-dasharray="14 86" transform="rotate(289.8 50 50)" opacity=".7"/>
-    </symbol>
-  </svg>
-
-  <!-- ============ LOADING AWAL ============ -->
-  <div class="loader" id="loader" role="status" aria-label="Memuat Aura Net">
-    <div class="loader__stage">
-      <svg class="loader__mark" viewBox="-8 -8 116 116" fill="none" aria-hidden="true">
-        <circle class="m-ring" cx="50" cy="50" r="30" pathLength="100" stroke="#fff" stroke-width="5.5" stroke-linecap="round"/>
-        <circle class="m-dot" cx="50" cy="50" r="11" fill="#fff"/>
-        <circle class="m-arc m-arc--a" cx="50" cy="50" r="41" pathLength="100" stroke="#FFA586" stroke-width="4.5" stroke-linecap="round"/>
-        <circle class="m-arc m-arc--b" cx="50" cy="50" r="51" pathLength="100" stroke="#FFA586" stroke-width="3.5" stroke-linecap="round" opacity=".7"/>
-      </svg>
-      <div class="loader__word" aria-hidden="true">
-        <span style="--i:0">A</span><span style="--i:1">U</span><span style="--i:2">R</span><span style="--i:3">A</span><span class="sp" style="--i:4"></span><span style="--i:5">N</span><span style="--i:6">E</span><span style="--i:7">T</span>
+<header class="nav" id="nav">
+  <a href="#beranda" class="brand" aria-label="Aura Net">
+    <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round" width="28" height="28"><path d="M14 38 A52 52 0 0 1 86 38"/><path d="M26 52 A34 34 0 0 1 74 52"/><path d="M38 66 A16 16 0 0 1 62 66"/><circle cx="50" cy="82" r="6" fill="currentColor" stroke="none"/></svg>
+    Aura Net
+  </a>
+  <nav class="menu" id="menu">
+    <a href="#beranda">Beranda</a>
+    <a href="#keunggulan">Keunggulan</a>
+    <a href="#paket">Paket</a>
+    <a href="#area">Area layanan</a>
+    <a href="#cara-pasang">Cara pasang</a>
+    <a href="#faq">Tanya jawab</a>
+    <a href="#daftar" class="menu-cta">Daftar sekarang</a>
+  </nav>
+  <button class="theme" id="theme" aria-label="Ganti mode gelap atau terang">
+    <svg class="i-moon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    <svg class="i-sun" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+  </button>
+  <button class="burger" id="burger" aria-label="Buka menu" aria-expanded="false"><span></span><span></span></button>
+</header>
+<main id="main">
+  <section class="hero" id="beranda">
+    <div class="hero-text">
+      <h1>Internet stabil untuk rumah dan usaha Anda</h1>
+      <p>Aura Net menghadirkan layanan internet dengan tarif tetap dan pemasangan langsung ke lokasi Anda. Paket 10 Mbps mulai Rp150.000 per bulan.</p>
+      <div class="hero-cta">
+        <a href="#daftar" class="btn btn-main">Pasang sekarang</a>
+        <a href="#paket" class="btn btn-ghost">Lihat paket</a>
       </div>
+      <ul class="trust">
+        <li>Tarif tetap setiap bulan</li>
+        <li>Pemasangan langsung ke lokasi</li>
+        <li>Konsultasi via telepon dan WhatsApp</li>
+      </ul>
     </div>
-    <div class="loader__bar"></div>
+    <div class="hero-art" aria-hidden="true">
+      <div class="waves"><i></i><i></i><i></i></div>
+      <svg class="router" viewBox="0 0 320 260" fill="none">
+        <g class="ant ant-l"><rect x="62" y="20" width="12" height="130" rx="6"/><circle cx="68" cy="20" r="9"/></g>
+        <g class="ant ant-r"><rect x="246" y="20" width="12" height="130" rx="6"/><circle cx="252" cy="20" r="9"/></g>
+        <rect class="body" x="20" y="140" width="280" height="90" rx="22"/>
+        <rect class="face" x="36" y="154" width="248" height="62" rx="14"/>
+        <circle class="led l1" cx="76" cy="185" r="7"/>
+        <circle class="led l2" cx="106" cy="185" r="7"/>
+        <circle class="led l3" cx="136" cy="185" r="7"/>
+        <circle class="led l4" cx="166" cy="185" r="7"/>
+        <text x="206" y="191" class="rt">Aura Net</text>
+        <rect class="foot" x="52" y="228" width="30" height="10" rx="4"/>
+        <rect class="foot" x="238" y="228" width="30" height="10" rx="4"/>
+      </svg>
+      <div class="chip chip-a"><b>10</b> Mbps</div>
+      <div class="chip chip-b"><i class="live"></i>Terhubung</div>
+    </div>
+  
+  </section>
+
+  <div class="ticker" aria-label="Cocok untuk">
+    <div class="ticker-track">
+      <span>Streaming film</span><span>Video call</span><span>Belajar online</span><span>Kerja dari rumah</span><span>Media sosial</span><span>Usaha dan warung</span><span>Game ringan</span>
+      <span aria-hidden="true">Streaming film</span><span aria-hidden="true">Video call</span><span aria-hidden="true">Belajar online</span><span aria-hidden="true">Kerja dari rumah</span><span aria-hidden="true">Media sosial</span><span aria-hidden="true">Usaha dan warung</span><span aria-hidden="true">Game ringan</span>
+    </div>
   </div>
 
-  <div class="progress" id="progress" aria-hidden="true"></div>
-
-  <!-- ============ NAVIGASI ============ -->
-  <header class="nav" id="nav">
-    <div class="nav__inner">
-      <a href="#beranda" class="brand" aria-label="Aura Net, ke beranda">
-        <svg class="brand__mark" aria-hidden="true"><use href="#logo-mark"/></svg>
-        <span class="brand__name">AURA NET</span>
-      </a>
-
-      <nav class="nav__links" id="navLinks" aria-label="Menu utama">
-        <span class="nav__ind" aria-hidden="true"></span>
-        <a href="#beranda" data-link="beranda">Beranda</a>
-        <a href="#keunggulan" data-link="keunggulan">Keunggulan</a>
-        <a href="#paket" data-link="paket">Paket</a>
-        <a href="#area" data-link="area">Area layanan</a>
-        <a href="#cara-pasang" data-link="cara-pasang">Cara pasang</a>
-        <a href="#faq" data-link="faq">Tanya jawab</a>
-        <a href="#daftar" class="btn btn--primary nav__cta-mobile">Daftar sekarang</a>
-      </nav>
-
-      <a href="#daftar" class="btn btn--primary btn--sm nav__cta">Daftar sekarang</a>
-
-      <button class="nav__toggle" id="navToggle" aria-label="Buka menu" aria-expanded="false" aria-controls="navLinks">
-        <span></span><span></span>
-      </button>
+  <section class="sec" id="keunggulan">
+    <div class="sec-head">
+      <h2>Kenapa memilih Aura Net</h2>
+      <p>Kami fokus pada hal yang paling dibutuhkan pelanggan: koneksi yang bisa diandalkan, harga yang jelas, dan bantuan yang mudah dijangkau.</p>
     </div>
-  </header>
+    <div class="perks">
+      <article><h3>Koneksi yang stabil</h3><p>Jaringan dikelola dan dipantau supaya aktivitas harian Anda tetap lancar, dari streaming sampai rapat online.</p></article>
+      <article><h3>Harga yang jelas</h3><p>Satu tarif tetap per bulan, Rp150.000 untuk paket 10 Mbps. Mudah dihitung dan mudah dianggarkan.</p><strong class="tag">Rp150.000<small>/bulan</small></strong></article>
+      <article><h3>Pemasangan langsung</h3><p>Setelah survei lokasi, tim kami memasang jaringan ke rumah atau tempat usaha Anda.</p></article>
+      <article><h3>Bantuan mudah dijangkau</h3><p>Ada kendala atau pertanyaan? Hubungi kami lewat telepon atau WhatsApp kapan saja Anda butuh.</p></article>
+    </div>
+  </section>
 
-  <!-- Ikon -->
-  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-    <defs>
-      <g id="i-wifi"><path d="M2 9a15 15 0 0 1 20 0M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0"/><circle cx="12" cy="19.5" r="1"/></g>
-      <g id="i-tag"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.2"/></g>
-      <g id="i-bolt"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></g>
-      <g id="i-chat"><path d="M21 11.5a8.5 8.5 0 0 1-12.4 7.5L3 20.5l1.6-5A8.5 8.5 0 1 1 21 11.5z"/></g>
-      <g id="i-phone"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></g>
-      <g id="i-check"><path d="m5 12.5 4.5 4.5L19 7.5"/></g>
-      <g id="i-copy"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></g>
-      <g id="i-pin"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></g>
-      <g id="i-up"><path d="M12 19V5M5 12l7-7 7 7"/></g>
-      <g id="i-arrow"><path d="M5 12h14M13 6l6 6-6 6"/></g>
-    </defs>
-  </svg>
-
-  <main id="main">
-    <!-- ============ HERO ============ -->
-    <section class="hero" id="beranda">
-      <div class="hero__bg" aria-hidden="true">
-        <div class="hero__dots"></div>
-        <div class="hero__rings"></div>
-      </div>
-
-      <div class="container hero__inner">
-        <div class="hero__copy">
-          <h1 data-split data-hero-title>Internet stabil untuk rumah dan usaha Anda</h1>
-          <p class="hero__lead" data-hero style="--d:.75s">
-            Aura Net menghadirkan layanan internet dengan tarif tetap dan pemasangan langsung ke lokasi Anda. Paket 10 Mbps mulai Rp150.000 per bulan.
-          </p>
-          <div class="hero__cta" data-hero style="--d:.9s">
-            <a class="btn btn--primary btn--lg" href="#daftar">
-              Pasang sekarang
-              <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-arrow"/></svg>
-            </a>
-            <a class="btn btn--ghost btn--lg" href="#paket">Lihat paket</a>
-          </div>
-          <ul class="hero__points" data-hero style="--d:1.05s">
-            <li><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check"/></svg>Tarif tetap setiap bulan</li>
-            <li><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check"/></svg>Pemasangan langsung ke lokasi</li>
-            <li><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check"/></svg>Konsultasi via telepon dan WhatsApp</li>
-          </ul>
-        </div>
-
-        <div class="hero__visual" data-hero style="--d:.6s" aria-hidden="true">
-          <div class="orbit" id="orbit">
-            <div class="orbit__disc">
-              <span class="orbit__ping"></span>
-              <span class="orbit__ping orbit__ping--2"></span>
-              <span class="orbit__ping orbit__ping--3"></span>
-            </div>
-
-            <div class="orbit__spin"><i class="sat sat--1"></i><i class="sat sat--2"></i><i class="sat sat--3"></i></div>
-
-            <div class="orbit__core" data-depth="10">
-              <svg viewBox="0 0 400 400" fill="none">
-                <ellipse cx="200" cy="378" rx="128" ry="11" fill="#161E2F" opacity=".2"/>
-                <rect x="86" y="196" width="18" height="76" rx="9" fill="#161E2F" transform="rotate(-12 95 272)"/>
-                <rect x="296" y="196" width="18" height="76" rx="9" fill="#161E2F" transform="rotate(12 305 272)"/>
-                <rect x="94" y="344" width="46" height="14" rx="6" fill="#2E3A58"/>
-                <rect x="260" y="344" width="46" height="14" rx="6" fill="#2E3A58"/>
-                <rect x="64" y="250" width="272" height="100" rx="28" fill="#161E2F"/>
-                <path d="M64 278a28 28 0 0 1 28-28h216a28 28 0 0 1 28 28z" fill="#2E3A58"/>
-                <use href="#logo-mark" x="86" y="292" width="44" height="44" style="color:#fff"/>
-                <circle class="led" style="--k:0" cx="196" cy="318" r="8" fill="#FFA586"/>
-                <circle class="led" style="--k:1" cx="224" cy="318" r="8" fill="#FFD23F"/>
-                <circle class="led" style="--k:2" cx="252" cy="318" r="8" fill="#fff"/>
-                <circle class="led" style="--k:3" cx="280" cy="318" r="8" fill="#8F9BFF"/>
-                <circle cx="200" cy="236" r="13" fill="#fff" stroke="#161E2F" stroke-width="5"/>
-                <g stroke="#161E2F" stroke-width="12" stroke-linecap="round">
-                  <path class="sig" style="--k:0" d="M173.13 209.13A38 38 0 0 1 226.87 209.13"/>
-                  <path class="sig" style="--k:1" d="M149.09 185.09A72 72 0 0 1 250.91 185.09"/>
-                  <path class="sig" style="--k:2" d="M125.05 161.05A106 106 0 0 1 274.95 161.05"/>
-                </g>
-              </svg>
-            </div>
-
-            <div class="chip chip--speed" data-depth="22">
-              <span class="chip__label">Kecepatan paket</span>
-              <strong class="chip__value">10 <small>Mbps</small></strong>
-              <span class="meter"><i></i><i></i><i></i><i></i><i></i></span>
-            </div>
-            <div class="chip chip--price" data-depth="16">
-              <span class="chip__label">Mulai dari</span>
-              <strong class="chip__value">Rp150.000 <small>/bulan</small></strong>
-            </div>
-            <div class="chip chip--status" data-depth="26">
-              <span class="status-dot"></span>
-              <span>Terhubung</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="marquee" id="marquee" aria-label="Kegunaan internet">
-        <div class="marquee__track">
-          <span>Streaming film</span><span>Video call</span><span>Belajar online</span><span>Kerja dari rumah</span><span>Media sosial</span><span>Usaha dan warung</span><span>Game ringan</span>
-          <span aria-hidden="true">Streaming film</span><span aria-hidden="true">Video call</span><span aria-hidden="true">Belajar online</span><span aria-hidden="true">Kerja dari rumah</span><span aria-hidden="true">Media sosial</span><span aria-hidden="true">Usaha dan warung</span><span aria-hidden="true">Game ringan</span>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============ KEUNGGULAN ============ -->
-    <section class="section section--pale" id="keunggulan">
-      <div class="container">
-        <div class="section__head section__head--row" data-reveal>
-          <h2>Kenapa memilih Aura Net</h2>
-          <p>Kami fokus pada hal yang paling dibutuhkan pelanggan: koneksi yang bisa diandalkan, harga yang jelas, dan bantuan yang mudah dijangkau.</p>
-        </div>
-
-        <div class="bento">
-          <article class="feature feature--signal" data-reveal="pop" style="--d:.05s">
-            <span class="feature__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-wifi"/></svg></span>
-            <div class="feature__bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
-            <div class="feature__text">
-              <h3>Koneksi yang stabil</h3>
-              <p>Jaringan dikelola dan dipantau supaya aktivitas harian Anda tetap lancar, dari streaming sampai rapat online.</p>
-            </div>
-          </article>
-
-          <article class="feature feature--price" data-reveal="pop" style="--d:.15s">
-            <div class="feature__main">
-              <span class="feature__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-tag"/></svg></span>
-              <h3>Harga yang jelas</h3>
-              <p>Satu tarif tetap per bulan, Rp150.000 untuk paket 10 Mbps. Mudah dihitung dan mudah dianggarkan.</p>
-            </div>
-            <div class="feature__stub" aria-hidden="true">
-              <span class="feature__value">Rp150.000<small>/bulan</small></span>
-            </div>
-          </article>
-
-          <article class="feature feature--install" data-reveal="pop" style="--d:.25s">
-            <span class="feature__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-bolt"/></svg></span>
-            <svg class="feature__cable" viewBox="0 0 240 70" fill="none" aria-hidden="true">
-              <path class="cable" d="M0 48C40 48 44 14 86 14S140 56 182 36L208 36"/>
-              <rect x="206" y="26" width="30" height="20" rx="5" fill="#FFA586"/>
-              <rect x="226" y="31" width="10" height="3" rx="1.5" fill="#161E2F"/>
-              <rect x="226" y="38" width="10" height="3" rx="1.5" fill="#161E2F"/>
-            </svg>
-            <div class="feature__text">
-              <h3>Pemasangan langsung</h3>
-              <p>Setelah survei lokasi, tim kami memasang jaringan ke rumah atau tempat usaha Anda.</p>
-            </div>
-          </article>
-
-          <article class="feature feature--help" data-reveal="pop" style="--d:.35s">
-            <span class="feature__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chat"/></svg></span>
-            <div class="feature__typing" aria-hidden="true"><i></i><i></i><i></i></div>
-            <div class="feature__text">
-              <h3>Bantuan mudah dijangkau</h3>
-              <p>Ada kendala atau pertanyaan? Hubungi kami lewat telepon atau WhatsApp kapan saja Anda butuh.</p>
-            </div>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============ PAKET ============ -->
-    <section class="section section--ink section--paket" id="paket">
-      <div class="paket__rings" aria-hidden="true"></div>
-      <div class="container paket">
-        <div class="paket__copy" data-reveal="left">
+  <section class="sec sec-alt" id="paket">
+    <div class="paket">
+      <div>
+        <div class="sec-head">
           <h2>Satu paket, jelas dan terjangkau</h2>
           <p>Paket 10 Mbps cocok untuk kebutuhan sehari-hari di rumah maupun usaha kecil. Tanpa pilihan yang membingungkan.</p>
-
-          <ul class="uses">
-            <li>
-              <strong>Streaming dan hiburan</strong>
-              <span>Nonton film dan video tanpa harus menunggu lama.</span>
-            </li>
-            <li>
-              <strong>Belajar dan bekerja</strong>
-              <span>Video call, kelas online, dan kirim berkas dari rumah.</span>
-            </li>
-            <li>
-              <strong>Usaha kecil</strong>
-              <span>Kasir online, pesan antar, dan promosi di media sosial.</span>
-            </li>
-          </ul>
-          <p class="paket__more">Butuh kecepatan yang lebih tinggi? Tanyakan langsung kepada kami.</p>
         </div>
-
-        <div class="paket__card-wrap" data-reveal="zoom" style="--d:.15s">
-          <svg class="stamp" viewBox="0 0 120 120" aria-hidden="true">
-            <defs><path id="stampPath" d="M60 60m-44 0a44 44 0 1 1 88 0a44 44 0 1 1-88 0"/></defs>
-            <circle class="stamp__bg" cx="60" cy="60" r="58"/>
-            <g class="stamp__spin">
-              <text class="stamp__text"><textPath href="#stampPath" textLength="268" lengthAdjust="spacing">tarif tetap setiap bulan •</textPath></text>
-            </g>
-            <g class="stamp__icon" transform="translate(42 42) scale(1.5)"><use href="#i-tag"/></g>
-          </svg>
-
-          <article class="price-card" id="priceCard">
-            <span class="price-card__shine" aria-hidden="true"></span>
-            <header class="price-card__top">
-              <h3>Paket Rumahan</h3>
-              <span class="tag">Tersedia</span>
-            </header>
-
-            <div class="price-card__speed">
-              <span class="price-card__num">10</span>
-              <span class="price-card__unit">Mbps</span>
-            </div>
-
-            <div class="price-card__price">
-              <span class="cur">Rp</span>
-              <span class="amount" data-count="150000">150.000</span>
-              <span class="per">/bulan</span>
-            </div>
-
-            <ul class="price-card__list">
-              <li><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check"/></svg>Kecepatan hingga 10 Mbps</li>
-              <li><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check"/></svg>Tarif tetap Rp150.000 per bulan</li>
-              <li><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check"/></svg>Cocok untuk streaming, belajar, dan bekerja</li>
-              <li><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check"/></svg>Pemasangan langsung ke lokasi</li>
-              <li><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check"/></svg>Bantuan via telepon dan WhatsApp</li>
-            </ul>
-
-            <a class="btn btn--blue btn--block" href="#daftar">
-              Daftar paket ini
-              <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-arrow"/></svg>
-            </a>
-            <p class="price-card__note">Biaya pemasangan dan ketentuan lain, tanyakan saat menghubungi kami.</p>
-          </article>
+        <ul class="uses">
+          <li><b>Streaming dan hiburan</b>Nonton film dan video tanpa harus menunggu lama.</li>
+          <li><b>Belajar dan bekerja</b>Video call, kelas online, dan kirim berkas dari rumah.</li>
+          <li><b>Usaha kecil</b>Kasir online, pesan antar, dan promosi di media sosial.</li>
+        </ul>
+        <p class="note">Butuh kecepatan yang lebih tinggi? Tanyakan langsung kepada kami.</p>
+      </div>
+      <div class="plan">
+        <div class="plan-price">
+          <span class="badge">Tersedia</span>
+          <h3 class="plan-name">Paket Rumahan</h3>
+          <span class="speed">10 Mbps</span>
+          <span class="price"><sup>Rp</sup>150<small>.000</small><em>/bulan, tarif tetap</em></span>
         </div>
+        <ul class="plan-list">
+          <li>Kecepatan hingga 10 Mbps</li>
+          <li>Tarif tetap Rp150.000 per bulan</li>
+          <li>Cocok untuk streaming, belajar, dan bekerja</li>
+          <li>Pemasangan langsung ke lokasi</li>
+          <li>Bantuan via telepon dan WhatsApp</li>
+        </ul>
+        <a href="#daftar" class="btn btn-main">Daftar paket ini</a>
+        <p class="small plan-note">Biaya pemasangan dan ketentuan lain, tanyakan saat menghubungi kami.</p>
       </div>
-    </section>
-
-    <!-- ============ AREA LAYANAN ============ -->
-    <section class="section section--sun" id="area">
-      <div class="container area">
-        <div class="area__map" data-reveal="left" aria-hidden="true">
-          <svg viewBox="0 0 400 400" class="map">
-            <circle class="map__disc" cx="200" cy="200" r="190"/>
-            <g class="map__rings">
-              <circle cx="200" cy="200" r="70"/>
-              <circle cx="200" cy="200" r="130"/>
-              <circle cx="200" cy="200" r="185"/>
-            </g>
-            <g class="map__links">
-              <line pathLength="100" x1="200" y1="200" x2="90" y2="110"/>
-              <line pathLength="100" x1="200" y1="200" x2="312" y2="92"/>
-              <line pathLength="100" x1="200" y1="200" x2="342" y2="232"/>
-              <line pathLength="100" x1="200" y1="200" x2="268" y2="334"/>
-              <line pathLength="100" x1="200" y1="200" x2="108" y2="322"/>
-              <line pathLength="100" x1="200" y1="200" x2="58" y2="214"/>
-            </g>
-            <g class="map__nodes">
-              <circle class="node" cx="90" cy="110" r="10" style="--n:0"/>
-              <circle class="node" cx="312" cy="92" r="10" style="--n:1"/>
-              <circle class="node" cx="342" cy="232" r="10" style="--n:2"/>
-              <circle class="node" cx="268" cy="334" r="10" style="--n:3"/>
-              <circle class="node" cx="108" cy="322" r="10" style="--n:4"/>
-              <circle class="node" cx="58" cy="214" r="10" style="--n:5"/>
-            </g>
-            <circle class="map__pulse" cx="200" cy="200" r="22"/>
-            <circle class="map__hub" cx="200" cy="200" r="22"/>
-            <circle cx="200" cy="200" r="7" fill="#fff"/>
-          </svg>
-          <span class="area__caption">Ilustrasi jaringan layanan</span>
-        </div>
-
-        <div class="area__copy" data-reveal="right" style="--d:.1s">
-          <h2>Area layanan</h2>
-          <p>Cek apakah lokasi Anda sudah terjangkau jaringan Aura Net. Ketik nama desa, kelurahan, atau perumahan Anda.</p>
-
-          <form class="checker" id="checker" autocomplete="off" novalidate>
-            <label for="areaInput" class="sr-only">Nama desa, kelurahan, atau perumahan</label>
-            <div class="checker__field">
-              <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-pin"/></svg>
-              <input id="areaInput" type="text" placeholder="Contoh: nama desa atau perumahan" aria-describedby="checkerResult">
-              <button type="submit" class="btn btn--dark btn--sm">Cek area</button>
-            </div>
-            <p class="checker__result" id="checkerResult" role="status" aria-live="polite"></p>
-          </form>
-
-          <h3 class="area__subtitle">Wilayah yang sudah terjangkau</h3>
-          <ul class="chips" id="areaList"></ul>
-          <p class="area__note">Wilayah terus bertambah. Lokasi Anda belum ada di daftar? Hubungi kami, kami cek langsung.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============ CARA PASANG ============ -->
-    <section class="section section--blue" id="cara-pasang">
-      <div class="container">
-        <div class="section__head" data-reveal>
-          <h2>Cara pasang, empat langkah mudah</h2>
-          <p>Dari menghubungi kami sampai internet aktif di tempat Anda.</p>
-        </div>
-
-        <ol class="steps" id="steps">
-          <li class="step" style="--d:0s">
-            <span class="step__num">1</span>
-            <h3>Hubungi kami</h3>
-            <p>Isi formulir pendaftaran, atau telepon dan kirim pesan WhatsApp ke nomor pemasangan kami.</p>
-          </li>
-          <li class="step" style="--d:.12s">
-            <span class="step__num">2</span>
-            <h3>Cek area dan survei</h3>
-            <p>Kami pastikan lokasi Anda terjangkau, lalu atur jadwal survei.</p>
-          </li>
-          <li class="step" style="--d:.24s">
-            <span class="step__num">3</span>
-            <h3>Pemasangan</h3>
-            <p>Tim kami memasang perangkat dan jaringan di rumah atau usaha Anda.</p>
-          </li>
-          <li class="step" style="--d:.36s">
-            <span class="step__num">4</span>
-            <h3>Internet aktif</h3>
-            <p>Koneksi siap dipakai. Kami tetap siap membantu jika ada kendala.</p>
-          </li>
-        </ol>
-      </div>
-    </section>
-
-    <!-- ============ FAQ ============ -->
-    <section class="section section--pale" id="faq">
-      <div class="container split">
-        <div class="split__head" data-reveal>
-          <h2>Pertanyaan yang sering diajukan</h2>
-          <p>Belum menemukan jawabannya? Hubungi kami, kami senang membantu.</p>
-        </div>
-
-        <div class="faq" data-reveal style="--d:.1s">
-          <div class="faq__item is-open">
-            <h3><button class="faq__q" id="q1" aria-expanded="true" aria-controls="a1">Berapa biaya berlangganan per bulan?<span class="faq__icon" aria-hidden="true"></span></button></h3>
-            <div class="faq__a" id="a1" role="region" aria-labelledby="q1"><div><p>Paket 10 Mbps tarifnya Rp150.000 per bulan. Untuk biaya pemasangan dan ketentuan lainnya, silakan tanyakan saat menghubungi kami.</p></div></div>
-          </div>
-          <div class="faq__item">
-            <h3><button class="faq__q" id="q2" aria-expanded="false" aria-controls="a2">Bagaimana cara mulai berlangganan?<span class="faq__icon" aria-hidden="true"></span></button></h3>
-            <div class="faq__a" id="a2" role="region" aria-labelledby="q2"><div><p>Isi formulir pendaftaran di bagian Daftar, atau hubungi nomor pemasangan 0895 6300 94597 lewat telepon atau WhatsApp. Kami akan membantu mengecek area dan menjadwalkan survei lokasi.</p></div></div>
-          </div>
-          <div class="faq__item">
-            <h3><button class="faq__q" id="q3" aria-expanded="false" aria-controls="a3">Apakah area saya sudah terjangkau?<span class="faq__icon" aria-hidden="true"></span></button></h3>
-            <div class="faq__a" id="a3" role="region" aria-labelledby="q3"><div><p>Anda bisa mengeceknya di bagian Area layanan pada halaman ini. Jika lokasi Anda belum ada di daftar, hubungi kami untuk pengecekan langsung.</p></div></div>
-          </div>
-          <div class="faq__item">
-            <h3><button class="faq__q" id="q4" aria-expanded="false" aria-controls="a4">Berapa lama proses pemasangan?<span class="faq__icon" aria-hidden="true"></span></button></h3>
-            <div class="faq__a" id="a4" role="region" aria-labelledby="q4"><div><p>Jadwal pemasangan disesuaikan setelah survei lokasi. Tim kami akan memberi perkiraan waktunya saat Anda menghubungi.</p></div></div>
-          </div>
-          <div class="faq__item">
-            <h3><button class="faq__q" id="q5" aria-expanded="false" aria-controls="a5">Apakah bisa dipakai untuk usaha?<span class="faq__icon" aria-hidden="true"></span></button></h3>
-            <div class="faq__a" id="a5" role="region" aria-labelledby="q5"><div><p>Bisa. Paket 10 Mbps cocok untuk usaha kecil seperti warung, toko, dan kasir online. Ceritakan kebutuhan Anda dan kami bantu carikan yang sesuai.</p></div></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============ DAFTAR & KONTAK ============ -->
-    <section class="section section--peach section--last" id="daftar">
-      <div class="container daftar">
-        <div class="daftar__copy" data-reveal="left">
-          <h2>Siap pasang Aura Net di tempat Anda?</h2>
-          <p>Isi formulir pendaftaran atau hubungi kami langsung. Kami bantu cek area dan atur jadwal survei lokasi.</p>
-
-          <div class="phone-box">
-            <span class="phone-box__label">Telepon pemasangan</span>
-            <a class="phone-box__number" href="tel:+62895630094597" id="phoneNumber">0895 6300 94597</a>
-            <div class="phone-box__actions">
-              <a class="btn btn--primary" href="tel:+62895630094597">
-                <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-phone"/></svg>
-                Telepon sekarang
-              </a>
-              <a class="btn btn--blue" href="https://wa.me/62895630094597?text=Halo%20Aura%20Net%2C%20saya%20ingin%20memasang%20internet." target="_blank" rel="noopener">
-                <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chat"/></svg>
-                Chat WhatsApp
-              </a>
-              <button class="btn btn--paper" type="button" id="copyBtn">
-                <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-copy"/></svg>
-                Salin nomor
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <form class="register" id="registerForm" novalidate data-reveal="right" style="--d:.12s">
-          <h3 class="register__title">Daftar lewat WhatsApp</h3>
-
-          <div class="field">
-            <label for="regName">Nama lengkap</label>
-            <input id="regName" name="nama" type="text" placeholder="Nama Anda" autocomplete="name" aria-describedby="errName">
-            <p class="field__error" id="errName" role="alert"></p>
-          </div>
-
-          <div class="field">
-            <label for="regAddress">Alamat pemasangan</label>
-            <textarea id="regAddress" name="alamat" rows="3" placeholder="Nama jalan, desa atau kelurahan, patokan" aria-describedby="errAddress"></textarea>
-            <p class="field__error" id="errAddress" role="alert"></p>
-          </div>
-
-          <div class="package-box">
-            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-wifi"/></svg>
-            <span>Paket: <strong>10 Mbps, Rp150.000/bulan</strong></span>
-          </div>
-
-          <button type="submit" class="btn btn--blue btn--submit">
-            <span class="btn__label">Kirim pendaftaran</span>
-            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-arrow"/></svg>
-          </button>
-          <p class="register__note">Pesan akan terbuka di WhatsApp dengan data yang sudah terisi. Anda masih bisa mengubahnya sebelum mengirim.</p>
-        </form>
-      </div>
-
-      <div class="wave" aria-hidden="true">
-        <svg class="wave__layer wave__layer--back" viewBox="0 0 2880 120" preserveAspectRatio="none"><path d="M0 60 Q180 0 360 60 T720 60 T1080 60 T1440 60 T1800 60 T2160 60 T2520 60 T2880 60 V120 H0 Z"/></svg>
-        <svg class="wave__layer wave__layer--front" viewBox="0 0 2880 120" preserveAspectRatio="none"><path d="M0 60 Q180 0 360 60 T720 60 T1080 60 T1440 60 T1800 60 T2160 60 T2520 60 T2880 60 V120 H0 Z"/></svg>
-      </div>
-    </section>
-  </main>
-
-  <!-- ============ FOOTER ============ -->
-  <footer class="footer">
-    <div class="container footer__inner">
-      <div class="footer__brand">
-        <a href="#beranda" class="brand" aria-label="Aura Net, ke atas">
-          <svg class="brand__mark" aria-hidden="true"><use href="#logo-mark"/></svg>
-          <span class="brand__name">AURA NET</span>
-        </a>
-        <p>Internet rumahan 10 Mbps dengan harga Rp150.000 per bulan.</p>
-      </div>
-      <nav class="footer__col" aria-label="Menu footer">
-        <h4>Menu</h4>
-        <a href="#keunggulan">Keunggulan</a>
-        <a href="#paket">Paket</a>
-        <a href="#area">Area layanan</a>
-        <a href="#cara-pasang">Cara pasang</a>
-        <a href="#faq">Tanya jawab</a>
-      </nav>
-      <div class="footer__col">
-        <h4>Hubungi kami</h4>
-        <a href="tel:+62895630094597">0895 6300 94597</a>
-        <a href="https://wa.me/62895630094597" target="_blank" rel="noopener">WhatsApp</a>
-        <a href="#daftar">Daftar pemasangan</a>
-      </div>
-      <p class="footer__copy">&copy; <span id="year">2026</span> Aura Net. Hak cipta dilindungi.</p>
     </div>
-    <div class="footer__giant" aria-hidden="true">AURA NET</div>
-  </footer>
+  </section>
 
-  <!-- Tombol WhatsApp melayang -->
-  <a class="fab" href="https://wa.me/62895630094597?text=Halo%20Aura%20Net%2C%20saya%20ingin%20bertanya%20tentang%20pemasangan." target="_blank" rel="noopener" aria-label="Chat WhatsApp Aura Net">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-chat"/></svg>
-    <span class="fab__text">Chat kami</span>
-  </a>
+  <section class="sec" id="area">
+    <div class="sec-head">
+      <h2>Area layanan</h2>
+      <p>Cek apakah lokasi Anda sudah terjangkau jaringan Aura Net. Ketik nama desa, kelurahan, atau perumahan Anda.</p>
+    </div>
+    <form class="checker" id="checker" novalidate>
+      <label for="lokasi" class="sr">Nama desa, kelurahan, atau perumahan</label>
+      <input id="lokasi" type="text" placeholder="Nama desa, kelurahan, atau perumahan" autocomplete="off">
+      <button class="btn btn-main" type="submit">Cek area</button>
+    </form>
+    <p class="check-result" id="checkResult" role="status"></p>
+    <h3 class="sub">Wilayah yang sudah terjangkau</h3>
+    <div class="areas">
+      <article class="area"><span class="pin"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg></span><h3>Parit Masigi 1</h3></article>
+      <article class="area"><span class="pin"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg></span><h3>Jalan Kemuning</h3></article>
+    </div>
+    <p class="note">Wilayah terus bertambah. Lokasi Anda belum ada di daftar? Hubungi kami, kami cek langsung.</p>
+  </section>
 
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <section class="sec sec-alt" id="cara-pasang">
+    <div class="sec-head">
+      <h2>Cara pasang, empat langkah mudah</h2>
+      <p>Dari menghubungi kami sampai internet aktif di tempat Anda.</p>
+    </div>
+    <ol class="steps">
+      <li><h3>Hubungi kami</h3><p>Isi formulir pendaftaran, atau telepon dan kirim pesan WhatsApp ke nomor pemasangan kami.</p></li>
+      <li><h3>Cek area dan survei</h3><p>Kami pastikan lokasi Anda terjangkau, lalu atur jadwal survei.</p></li>
+      <li><h3>Pemasangan</h3><p>Tim kami memasang perangkat dan jaringan di rumah atau usaha Anda.</p></li>
+      <li><h3>Internet aktif</h3><p>Koneksi siap dipakai. Kami tetap siap membantu jika ada kendala.</p></li>
+    </ol>
+  </section>
 
-  <button class="to-top" id="toTop" type="button" aria-label="Kembali ke atas">
-    <svg class="to-top__ring" viewBox="0 0 48 48" aria-hidden="true"><circle class="to-top__bg" cx="24" cy="24" r="21"/><circle class="to-top__fg" id="toTopRing" cx="24" cy="24" r="21"/></svg>
-    <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-up"/></svg>
-  </button>
+  <section class="sec" id="faq">
+    <div class="sec-head">
+      <h2>Pertanyaan yang sering diajukan</h2>
+      <p>Belum menemukan jawabannya? Hubungi kami, kami senang membantu.</p>
+    </div>
+    <div class="faq">
+      <details><summary>Berapa biaya berlangganan per bulan?</summary><p>Paket 10 Mbps tarifnya Rp150.000 per bulan. Untuk biaya pemasangan dan ketentuan lainnya, silakan tanyakan saat menghubungi kami.</p></details>
+      <details><summary>Bagaimana cara mulai berlangganan?</summary><p>Isi formulir pendaftaran di bagian Daftar, atau hubungi nomor pemasangan 0895 6300 94597 lewat telepon atau WhatsApp. Kami akan membantu mengecek area dan menjadwalkan survei lokasi.</p></details>
+      <details><summary>Apakah area saya sudah terjangkau?</summary><p>Anda bisa mengeceknya di bagian Area layanan pada halaman ini. Jika lokasi Anda belum ada di daftar, hubungi kami untuk pengecekan langsung.</p></details>
+      <details><summary>Berapa lama proses pemasangan?</summary><p>Jadwal pemasangan disesuaikan setelah survei lokasi. Tim kami akan memberi perkiraan waktunya saat Anda menghubungi.</p></details>
+      <details><summary>Apakah bisa dipakai untuk usaha?</summary><p>Bisa. Paket 10 Mbps cocok untuk usaha kecil seperti warung, toko, dan kasir online. Ceritakan kebutuhan Anda dan kami bantu carikan yang sesuai.</p></details>
+    </div>
+  </section>
 
-  <div class="wipe" id="wipe" aria-hidden="true">
-    <i></i><i></i><i></i><i></i><i></i>
-    <svg class="wipe__mark"><use href="#logo-mark"/></svg>
+  <section class="sec sec-alt" id="daftar">
+    <div class="sec-head">
+      <h2>Siap pasang Aura Net di tempat Anda?</h2>
+      <p>Isi formulir pendaftaran atau hubungi kami langsung. Kami bantu cek area dan atur jadwal survei lokasi.</p>
+    </div>
+    <div class="signup">
+      <form id="form" novalidate>
+        <h3>Daftar lewat WhatsApp</h3>
+        <label for="nama">Nama lengkap</label>
+        <input id="nama" name="nama" type="text" autocomplete="name" placeholder="Contoh: Budi Santoso" required>
+        <span class="err" data-for="nama"></span>
+        <label for="alamat">Alamat pemasangan</label>
+        <textarea id="alamat" name="alamat" rows="3" placeholder="Jalan, nomor rumah, patokan terdekat" required></textarea>
+        <span class="err" data-for="alamat"></span>
+        <p class="pkg">Paket: <b>10 Mbps, Rp150.000/bulan</b></p>
+        <button type="submit" class="btn btn-main btn-wa">Kirim pendaftaran</button>
+        <p class="small">Pesan akan terbuka di WhatsApp dengan data yang sudah terisi. Anda masih bisa mengubahnya sebelum mengirim.</p>
+      </form>
+      <aside class="contact">
+        <p>Telepon pemasangan</p>
+        <a class="tel" href="tel:+62895630094597">0895 6300 94597</a>
+        <div class="contact-btns">
+          <a class="btn btn-main" href="tel:+62895630094597">Telepon sekarang</a>
+          <a class="btn btn-ghost" href="https://wa.me/62895630094597?text=Halo%20Aura%20Net%2C%20saya%20ingin%20memasang%20internet." target="_blank" rel="noopener">Chat WhatsApp</a>
+          <button class="btn btn-ghost" type="button" id="copy">Salin nomor</button>
+        </div>
+      </aside>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="foot-grid">
+    <div><a href="#beranda" class="brand">Aura Net</a><p>Internet rumahan 10 Mbps dengan harga Rp150.000 per bulan.</p></div>
+    <div><h4>Menu</h4><a href="#keunggulan">Keunggulan</a><a href="#paket">Paket</a><a href="#area">Area layanan</a><a href="#cara-pasang">Cara pasang</a><a href="#faq">Tanya jawab</a></div>
+    <div><h4>Hubungi kami</h4><a href="tel:+62895630094597">0895 6300 94597</a><a href="https://wa.me/62895630094597" target="_blank" rel="noopener">WhatsApp</a><a href="#daftar">Daftar pemasangan</a></div>
   </div>
-  <div class="spotlight" id="spotlight" aria-hidden="true"></div>
+  <p class="copy">© <span id="year"></span> Aura Net. Hak cipta dilindungi.</p>
+</footer>
 
-  <script src="script.js"></script>
+<a class="fab" href="https://wa.me/62895630094597?text=Halo%20Aura%20Net%2C%20saya%20ingin%20bertanya%20tentang%20pemasangan." target="_blank" rel="noopener">Chat kami</a>
+<div class="toast" id="toast" role="status"></div>
+<script src="script.js"></script>
 </body>
 </html>
