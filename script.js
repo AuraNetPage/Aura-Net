@@ -10,8 +10,8 @@
 
   /* ---------- Tema gelap / terang ---------- */
   var saved = null;
-  try { saved = localStorage.getItem('aura-theme'); } catch (e) {}
-  root.setAttribute('data-theme', saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+  try { saved = localStorage.getItem('aura-theme-v2'); } catch (e) {}
+  root.setAttribute('data-theme', saved === 'dark' ? 'dark' : 'light'); // default selalu terang
   $('#theme').addEventListener('click', function () {
     var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
     var r = this.getBoundingClientRect();
@@ -19,7 +19,7 @@
     root.style.setProperty('--ty', (r.top + r.height / 2) + 'px');
     var apply = function () { root.setAttribute('data-theme', next); };
     if (document.startViewTransition && !reduce) document.startViewTransition(apply); else apply();
-    try { localStorage.setItem('aura-theme', next); } catch (e) {}
+    try { localStorage.setItem('aura-theme-v2', next); } catch (e) {}
   });
 
   /* ---------- Pecah kata untuk judul ---------- */

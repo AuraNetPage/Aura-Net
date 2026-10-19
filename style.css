@@ -116,7 +116,7 @@ h2{font-size:clamp(30px,5.2vw,66px);max-width:14em;margin-bottom:22px}
 .nav-cta{margin-left:0}
 
 /* ===== Hero ===== */
-.hero{max-width:1240px;margin:0 auto;min-height:100svh;padding:140px clamp(18px,5vw,56px) 70px;display:grid;grid-template-columns:1.08fr .92fr;gap:30px;align-items:center}
+.hero{max-width:1240px;margin:0 auto;min-height:100svh;padding:150px clamp(18px,5vw,56px) 70px;display:grid;grid-template-columns:1.08fr .92fr;gap:30px;align-items:center}
 .kicker{display:inline-flex;align-items:center;gap:10px;border:2px solid var(--ink);border-radius:99px;padding:7px 16px;margin-bottom:26px;font-weight:700;font-size:12px}
 .live{display:inline-block;width:10px;height:10px;border-radius:50%;background:#18c964;animation:livep 1.6s infinite}
 @keyframes livep{0%{box-shadow:0 0 0 0 rgba(24,201,100,.7)}100%{box-shadow:0 0 0 10px rgba(24,201,100,0)}}
