@@ -16,18 +16,19 @@
 <a class="skip" href="#main">Lewati ke konten</a>
 
 <!-- OPENING -->
-<div id="intro" aria-hidden="true">
-  <div class="slats"><i></i><i></i><i></i><i></i><i></i><i></i></div>
-  <i class="ibar" id="ibar"></i>
-  <div class="istage" id="istage">
-    <div class="pill">
-      <div class="pill-ico">
-        <svg viewBox="0 0 100 100" fill="none"><path class="arc a3" d="M14 40A52 52 0 0 1 86 40" pathLength="1"/><path class="arc a2" d="M27 54A34 34 0 0 1 73 54" pathLength="1"/><path class="arc a1" d="M39 68A16 16 0 0 1 61 68" pathLength="1"/><circle class="dot" cx="50" cy="83" r="6.5"/></svg>
-      </div>
-      <div class="pill-word"><span><b style="--i:0">A</b><b style="--i:1">u</b><b style="--i:2">r</b><b style="--i:3">a</b></span><span><b style="--i:5">N</b><b style="--i:6">e</b><b style="--i:7">t</b></span></div>
+<div class="loader" id="loader" role="status" aria-label="Memuat Aura Net">
+  <div class="loader__stage">
+    <svg class="loader__mark" viewBox="-8 -8 116 116" fill="none" aria-hidden="true">
+      <circle class="m-ring" cx="50" cy="50" r="30" pathLength="100" stroke="#fff" stroke-width="5.5" stroke-linecap="round"/>
+      <circle class="m-dot" cx="50" cy="50" r="11" fill="#fff"/>
+      <circle class="m-arc m-arc--a" cx="50" cy="50" r="41" pathLength="100" stroke="#FFA586" stroke-width="4.5" stroke-linecap="round"/>
+      <circle class="m-arc m-arc--b" cx="50" cy="50" r="51" pathLength="100" stroke="#FFA586" stroke-width="3.5" stroke-linecap="round" opacity=".7"/>
+    </svg>
+    <div class="loader__word" aria-hidden="true">
+      <span style="--i:0">A</span><span style="--i:1">U</span><span style="--i:2">R</span><span style="--i:3">A</span><span class="sp" style="--i:4"></span><span style="--i:5">N</span><span style="--i:6">E</span><span style="--i:7">T</span>
     </div>
-    <div class="icount"><small>Menyambungkan</small><strong><span id="pct">000</span><em>%</em></strong></div>
   </div>
+  <div class="loader__bar"></div>
 </div>
 <div class="wipe" id="wipe" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><span id="wipeLabel"></span></div>
 <div class="progress" id="progress"></div>

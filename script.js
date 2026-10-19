@@ -46,39 +46,23 @@
   }
   $$('.hero h1, h2').forEach(splitText);
 
-  /* ---------- Opening: pil logo, hitung 0-100%, tirai terbuka ---------- */
-  var intro = $('#intro'), pct = $('#pct'), ibar = $('#ibar');
-  var ready = document.readyState === 'complete', t0 = performance.now(), MIN = 3600, finished = false;
-  window.addEventListener('load', function () { ready = true; });
-
-  function ease(x) { return 1 - Math.pow(1 - x, 2.2); }
-  function progressLoop(now) {
-    if (finished) return;
-    var p = Math.min((now - t0) / MIN, 1);
-    if (!ready) p = Math.min(p, 0.94);
-    var v = Math.round(ease(p) * 100);
-    pct.textContent = ('00' + v).slice(-3);
-    ibar.style.transform = 'scaleX(' + ease(p) + ')';
-    if (p >= 1) { finish(); return; }
-    requestAnimationFrame(progressLoop);
-  }
-  function finish() {
-    if (finished) return; finished = true;
-    pct.textContent = '100'; ibar.style.transform = 'scaleX(1)';
-    setTimeout(function () { intro.classList.add('out'); }, 250);
-    setTimeout(function () {
-      intro.classList.add('open');
-      document.body.classList.remove('loading');
-      setTimeout(heroIn, 450);
-    }, 700);
-    setTimeout(function () { intro.remove(); }, 2200);
-  }
+  /* ---------- Opening: cincin + titik, tirai naik ---------- */
+  var loader = $('#loader'), startedAt = performance.now(), MIN = reduce ? 0 : 3900, finished = false;
   function heroIn() {
     $('.hero h1').classList.add('in');
-    $$('.hero .rv').forEach(function (el, i) { el.style.setProperty('--d', (0.25 + i * 0.12) + 's'); el.classList.add('in'); });
+    $$('.hero .rv').forEach(function (el, i) { el.style.setProperty('--d', (0.2 + i * 0.12) + 's'); el.classList.add('in'); });
   }
-  requestAnimationFrame(progressLoop);
-  setTimeout(finish, 8000);
+  function finishLoading() {
+    if (finished) return; finished = true;
+    loader.classList.add('is-done');
+    document.body.classList.remove('loading');
+    window.scrollTo(0, 0);
+    setTimeout(heroIn, reduce ? 0 : 450);
+    setTimeout(function () { loader.remove(); }, 1500);
+  }
+  function schedule() { setTimeout(finishLoading, Math.max(0, MIN - (performance.now() - startedAt))); }
+  if (document.readyState === 'complete') schedule(); else window.addEventListener('load', schedule);
+  setTimeout(finishLoading, 8000);
 
   /* ---------- Muncul saat scroll + hitung angka ---------- */
   function countUp(box) {
