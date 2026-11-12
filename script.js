@@ -4,9 +4,22 @@
   const $$ = (s, c = document) => [...c.querySelectorAll(s)];
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const hover = matchMedia('(hover: hover)').matches;
+  const OPEN = reduce ? 900 : 2300; /* harus sama dengan --t di CSS */
   const WA = '62895630094597';
   const wa = t => `https://wa.me/${WA}?text=${encodeURIComponent(t)}`;
   const hero = $('.hero'), head = $('.site'), fab = $('.fab'), menuBtn = $('.menu-btn');
+
+  /* opening: kunci scroll, hitung 0-100%, lalu buka tirai */
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  scrollTo(0, 0);
+  document.body.classList.add('lock');
+  const pct = $('#pct'), tp = performance.now();
+  (function load(now) {
+    const k = Math.min((now - tp) / (OPEN - 700), 1);
+    pct.textContent = Math.round(100 * (1 - Math.pow(1 - k, 2)));
+    if (k < 1) requestAnimationFrame(load);
+  })(tp);
+  setTimeout(() => { document.body.classList.remove('lock'); $('.intro').remove(); }, OPEN + 800);
 
   /* progres scroll, header, tombol chat, parallax orb */
   const prog = document.createElement('div');
@@ -33,12 +46,44 @@
   $$('.nav a').forEach(a => a.addEventListener('click', () => setMenu(false)));
   addEventListener('keydown', e => e.key === 'Escape' && setMenu(false));
 
+  /* transisi perpindahan: layar berwarna menyapu, halaman pindah di balik layar */
+  const pages = {
+    beranda: ['Beranda', '#1A1260', '#fff'], keunggulan: ['Keunggulan', '#7A4BFF', '#fff'],
+    paket: ['Paket', '#B23AA8', '#fff'], area: ['Area layanan', '#3B38FF', '#fff'],
+    'cara-pasang': ['Cara pasang', '#FF5FA8', '#1A1260'], faq: ['Tanya jawab', '#FFD166', '#1A1260'],
+    daftar: ['Daftar', '#FF8A5C', '#1A1260']
+  };
+  const wipe = document.createElement('div'), wl = document.createElement('span');
+  wipe.className = 'wipe'; wipe.setAttribute('aria-hidden', 'true'); wipe.append(wl);
+  document.body.append(wipe);
+  let busy = false;
+  document.addEventListener('click', e => {
+    const a = e.target.closest('a[href^="#"]');
+    if (!a || e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;
+    const id = a.getAttribute('href').slice(1), t = id && id !== 'main' && document.getElementById(id);
+    if (!t) return;
+    e.preventDefault();
+    if (busy) return;
+    busy = true;
+    const [label, bg, fg] = pages[id] || [id, '#3B38FF', '#fff'];
+    wipe.style.setProperty('--c', bg); wipe.style.setProperty('--tc', fg); wl.textContent = label;
+    wipe.className = 'wipe in';
+    setTimeout(() => {
+      scrollTo({ top: id === 'beranda' ? 0 : t.getBoundingClientRect().top + scrollY, behavior: 'instant' });
+      history.replaceState(null, '', '#' + id);
+      t.setAttribute('tabindex', '-1'); t.focus({ preventScroll: true });
+      onScroll();
+      wipe.className = 'wipe out';
+    }, 850);
+    setTimeout(() => { wipe.className = 'wipe'; busy = false; }, 1550);
+  });
+
   /* meter: hitung naik setelah tirai pembuka */
   const meter = $('.meter'), count = $('#count');
   meter.classList.add('go');
-  if (!reduce) {
+  {
     count.textContent = '0';
-    const t0 = performance.now() + 1900;
+    const t0 = performance.now() + OPEN + 500;
     (function tick(now) {
       const k = Math.min(Math.max((now - t0) / 1800, 0), 1);
       count.textContent = Math.round(10 * (1 - Math.pow(1 - k, 3)));
@@ -49,7 +94,7 @@
   /* riak air berwarna di hero */
   const cv = $('#water'), ctx = cv.getContext('2d');
   const pal = [[255, 95, 168], [255, 209, 102], [121, 199, 255]];
-  let w = 0, h = 0, ripples = [], running = false, last = 0, timer = 1800, lx = -999, ly = -999;
+  let w = 0, h = 0, ripples = [], running = false, last = 0, timer = OPEN + 200, lx = -999, ly = -999;
   const size = () => {
     const dpr = Math.min(devicePixelRatio || 1, 2);
     w = hero.clientWidth; h = hero.clientHeight;
@@ -91,10 +136,7 @@
   };
   size();
   addEventListener('resize', size);
-  if (reduce) {
-    const [x, y] = center();
-    [0.25, 0.5, 0.75].forEach((k, i) => ring({ x, y, max: Math.min(w, 520) * 0.8, c: 0 }, i, k));
-  } else {
+  {
     new IntersectionObserver(([e]) => {
       running = e.isIntersecting;
       if (running) { last = performance.now(); requestAnimationFrame(frame); }
@@ -140,7 +182,7 @@
   Object.keys(bgs).forEach(id => so.observe($('#' + id)));
 
   /* cahaya yang mengikuti kursor, tombol magnet, kartu paket miring */
-  if (!reduce && hover) {
+  if (hover) {
     const g = document.createElement('div');
     g.className = 'glow';
     document.body.append(g);
