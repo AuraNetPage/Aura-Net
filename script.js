@@ -1,19 +1,28 @@
 (() => {
+  document.documentElement.classList.add('js');
   const $ = (s, c = document) => c.querySelector(s);
   const $$ = (s, c = document) => [...c.querySelectorAll(s)];
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const hover = matchMedia('(hover: hover)').matches;
   const WA = '62895630094597';
   const wa = t => `https://wa.me/${WA}?text=${encodeURIComponent(t)}`;
+  const hero = $('.hero'), head = $('.site'), fab = $('.fab'), menuBtn = $('.menu-btn');
 
-  /* header, tombol chat, menu mobile */
-  const head = $('.site'), fab = $('.fab'), menuBtn = $('.menu-btn');
+  /* progres scroll, header, tombol chat, parallax orb */
+  const prog = document.createElement('div');
+  prog.className = 'prog';
+  document.body.append(prog);
   const onScroll = () => {
-    head.classList.toggle('scrolled', scrollY > 40);
-    fab.classList.toggle('show', scrollY > innerHeight * 0.8);
+    const y = scrollY;
+    head.classList.toggle('scrolled', y > 40);
+    fab.classList.toggle('show', y > innerHeight * 0.8);
+    prog.style.setProperty('--p', (y / Math.max(1, document.documentElement.scrollHeight - innerHeight)).toFixed(4));
+    if (y < innerHeight * 1.6) hero.style.setProperty('--py', y);
   };
   addEventListener('scroll', onScroll, { passive: true });
   onScroll();
 
+  /* menu mobile */
   const setMenu = open => {
     head.classList.toggle('open', open);
     document.body.classList.toggle('lock', open);
@@ -24,14 +33,12 @@
   $$('.nav a').forEach(a => a.addEventListener('click', () => setMenu(false)));
   addEventListener('keydown', e => e.key === 'Escape' && setMenu(false));
 
-  /* meter kecepatan: hitung naik + busur terisi */
+  /* meter: hitung naik setelah tirai pembuka */
   const meter = $('.meter'), count = $('#count');
-  if (reduce) {
-    meter.classList.add('go');
-  } else {
-    meter.classList.add('go');
+  meter.classList.add('go');
+  if (!reduce) {
     count.textContent = '0';
-    const t0 = performance.now() + 1200;
+    const t0 = performance.now() + 1900;
     (function tick(now) {
       const k = Math.min(Math.max((now - t0) / 1800, 0), 1);
       count.textContent = Math.round(10 * (1 - Math.pow(1 - k, 3)));
@@ -39,10 +46,10 @@
     })(performance.now());
   }
 
-  /* riak air di hero: jatuh otomatis dari meter, dan mengikuti sentuhan/kursor */
-  const cv = $('#water'), hero = $('.hero'), ctx = cv.getContext('2d');
-  let w = 0, h = 0, ripples = [], running = false, last = 0, timer = 0, lx = -999, ly = -999;
-
+  /* riak air berwarna di hero */
+  const cv = $('#water'), ctx = cv.getContext('2d');
+  const pal = [[255, 95, 168], [255, 209, 102], [121, 199, 255]];
+  let w = 0, h = 0, ripples = [], running = false, last = 0, timer = 1800, lx = -999, ly = -999;
   const size = () => {
     const dpr = Math.min(devicePixelRatio || 1, 2);
     w = hero.clientWidth; h = hero.clientHeight;
@@ -54,15 +61,15 @@
     return [m.left + m.width / 2 - r.left, m.top + m.height / 2 - r.top];
   };
   const drop = (x, y, big) => {
-    ripples.push({ x, y, t: 0, max: big ? Math.min(w, 520) * 0.8 : 230, n: big ? 3 : 2 });
+    ripples.push({ x, y, t: 0, c: Math.floor(Math.random() * 3), max: big ? Math.min(w, 520) * 0.8 : 230, n: big ? 3 : 2 });
     if (ripples.length > 14) ripples.shift();
   };
   const ring = (p, i, k) => {
-    const e = 1 - Math.pow(1 - k, 3), r = e * p.max;
+    const e = 1 - Math.pow(1 - k, 3), r = e * p.max, c = pal[((p.c || 0) + i) % 3];
     ctx.beginPath();
     ctx.ellipse(p.x, p.y, r, r * 0.38, 0, 0, Math.PI * 2);
-    ctx.strokeStyle = i % 2 ? `rgba(157,182,255,${(1 - k) * 0.5})` : `rgba(111,227,210,${(1 - k) * 0.6})`;
-    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = `rgba(${c[0]},${c[1]},${c[2]},${(1 - k) * 0.7})`;
+    ctx.lineWidth = 2;
     ctx.stroke();
   };
   const frame = now => {
@@ -82,12 +89,11 @@
     ripples = ripples.filter(p => p.t < 2600 + p.n * 280);
     requestAnimationFrame(frame);
   };
-
   size();
   addEventListener('resize', size);
   if (reduce) {
     const [x, y] = center();
-    [0.25, 0.5, 0.75].forEach((k, i) => ring({ x, y, max: Math.min(w, 520) * 0.8 }, i, k));
+    [0.25, 0.5, 0.75].forEach((k, i) => ring({ x, y, max: Math.min(w, 520) * 0.8, c: 0 }, i, k));
   } else {
     new IntersectionObserver(([e]) => {
       running = e.isIntersecting;
@@ -103,19 +109,61 @@
     });
   }
 
-  /* garis dan kabel menyala saat masuk layar */
+  /* judul section muncul kata per kata */
+  $$('.sec h2').forEach(el => {
+    el.innerHTML = el.textContent.trim().split(/\s+/)
+      .map((t, i) => `<span class="w"><span style="--d:${i}">${t}</span></span>`).join(' ');
+    el.classList.add('hs');
+  });
+
+  /* animasi masuk saat di-scroll */
   const io = new IntersectionObserver(es => es.forEach(e => {
     if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
-  }), { threshold: 0.2, rootMargin: '0px 0px -10% 0px' });
-  $$('.rows li, .steps').forEach(el => io.observe(el));
+  }), { threshold: 0.15, rootMargin: '0px 0px -8% 0px' });
+  const reveal = (sel, cls = '') => $$(sel).forEach(el => {
+    el.classList.add('rv', ...cls.split(' ').filter(Boolean));
+    el.style.setProperty('--d', [...el.parentElement.children].indexOf(el) % 6);
+    io.observe(el);
+  });
+  reveal('.sub, .stick p, #paket .split>div>p, #area .split>div>p, .note');
+  reveal('.uses li', 'l');
+  reveal('.rows li, .faq-item, .foot-grid>div');
+  reveal('.map, .reg, .check, .chips', 'z');
+  reveal('.join .split>div>*');
+  $$('.hs, .plan, .steps').forEach(el => io.observe(el));
 
-  /* kartu paket miring mengikuti kursor */
-  const plan = $('.plan');
-  if (!reduce && matchMedia('(hover: hover)').matches) {
+  /* latar halaman berubah warna mengikuti section */
+  const bgs = { keunggulan: '#E9E4FF', paket: '#FFE2EE', area: '#DCEFFF', 'cara-pasang': '#FFE8D6', faq: '#FFF3C7' };
+  const so = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) document.body.style.backgroundColor = bgs[e.target.id];
+  }), { rootMargin: '-50% 0px -50% 0px' });
+  Object.keys(bgs).forEach(id => so.observe($('#' + id)));
+
+  /* cahaya yang mengikuti kursor, tombol magnet, kartu paket miring */
+  if (!reduce && hover) {
+    const g = document.createElement('div');
+    g.className = 'glow';
+    document.body.append(g);
+    let gx = innerWidth / 2, gy = innerHeight / 2, tx = gx, ty = gy;
+    addEventListener('pointermove', e => { tx = e.clientX; ty = e.clientY; });
+    (function loop() {
+      gx += (tx - gx) * 0.12; gy += (ty - gy) * 0.12;
+      g.style.transform = `translate(${gx - 200}px,${gy - 200}px)`;
+      requestAnimationFrame(loop);
+    })();
+    $$('.btn').forEach(b => {
+      b.addEventListener('pointermove', e => {
+        const r = b.getBoundingClientRect();
+        b.style.setProperty('--mx', (e.clientX - r.left - r.width / 2) * 0.22 + 'px');
+        b.style.setProperty('--my', (e.clientY - r.top - r.height / 2) * 0.3 + 'px');
+      });
+      b.addEventListener('pointerleave', () => { b.style.removeProperty('--mx'); b.style.removeProperty('--my'); });
+    });
+    const plan = $('.plan');
     plan.addEventListener('pointermove', e => {
       const r = plan.getBoundingClientRect();
       const x = (e.clientX - r.left) / r.width - 0.5, y = (e.clientY - r.top) / r.height - 0.5;
-      plan.style.transform = `perspective(900px) rotateY(${x * 7}deg) rotateX(${-y * 7}deg)`;
+      plan.style.transform = `perspective(900px) rotateY(${x * 8}deg) rotateX(${-y * 8}deg) scale(1.02)`;
     });
     plan.addEventListener('pointerleave', () => { plan.style.transform = ''; });
   }
@@ -161,7 +209,7 @@
     b.setAttribute('aria-expanded', open);
   }));
 
-  /* salin nomor & kirim pendaftaran ke WhatsApp */
+  /* salin nomor dan kirim pendaftaran ke WhatsApp */
   const copy = $('#copy');
   copy.addEventListener('click', async () => {
     try { await navigator.clipboard.writeText('0895630094597'); copy.textContent = 'Nomor tersalin'; }
