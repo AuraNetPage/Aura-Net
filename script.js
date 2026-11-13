@@ -92,8 +92,8 @@
     setTimeout(() => { tr.className = 'tr'; busy = false; }, 1650);
   });
 
-  /* inti aura: hitung naik setelah opening, geser halus mengikuti kursor */
-  const meter = $('.meter'), count = $('#count'), aura = $('.aura');
+  /* kecepatan: hitung naik setelah opening, geser halus mengikuti kursor */
+  const meter = $('.meter'), count = $('#count'), aura = $('.scene');
   meter.classList.add('go');
   count.textContent = '0';
   const tc = performance.now() + OPEN + 400;
