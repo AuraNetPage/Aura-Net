@@ -4,24 +4,37 @@
   const $$ = (s, c = document) => [...c.querySelectorAll(s)];
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const hover = matchMedia('(hover: hover)').matches;
-  const OPEN = reduce ? 900 : 2300; /* harus sama dengan --t di CSS */
+  const OPEN = reduce ? 1400 : 2400; /* harus sama dengan --t di CSS */
   const WA = '62895630094597';
   const wa = t => `https://wa.me/${WA}?text=${encodeURIComponent(t)}`;
   const hero = $('.hero'), head = $('.site'), fab = $('.fab'), menuBtn = $('.menu-btn');
+  const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 
-  /* opening: kunci scroll, hitung 0-100%, lalu buka tirai */
+  /* opening: kunci scroll, hitung 0-100% saat bola terisi, lalu cincin meledak */
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
   scrollTo(0, 0);
   document.body.classList.add('lock');
-  const pct = $('#pct'), tp = performance.now();
+  const pct = $('#pct'), tp = performance.now() + 200, dur = Math.max(400, OPEN - 1000);
   (function load(now) {
-    const k = Math.min((now - tp) / (OPEN - 700), 1);
+    const k = clamp((now - tp) / dur);
     pct.textContent = Math.round(100 * (1 - Math.pow(1 - k, 2)));
     if (k < 1) requestAnimationFrame(load);
-  })(tp);
-  setTimeout(() => { document.body.classList.remove('lock'); $('.intro').remove(); }, OPEN + 800);
+  })(performance.now());
+  setTimeout(() => { document.body.classList.remove('lock'); $('.intro').remove(); }, OPEN + 700);
 
-  /* progres scroll, header, tombol chat, parallax orb */
+  /* kabel cara pasang: menyala sesuai posisi scroll */
+  const steps = $('.steps'), stepLis = $$('li', steps);
+  function updSteps() {
+    const r = steps.getBoundingClientRect();
+    const p = clamp((innerHeight * 0.8 - r.top) / (r.height + innerHeight * 0.15));
+    steps.style.setProperty('--p', p.toFixed(3));
+    stepLis.forEach((li, i) => {
+      li.classList.toggle('on', p * 3 >= i - 0.01);
+      li.style.setProperty('--f', clamp(p * 3 - i).toFixed(3));
+    });
+  }
+
+  /* progres scroll, header, tombol chat, parallax titik hero */
   const prog = document.createElement('div');
   prog.className = 'prog';
   document.body.append(prog);
@@ -31,8 +44,10 @@
     fab.classList.toggle('show', y > innerHeight * 0.8);
     prog.style.setProperty('--p', (y / Math.max(1, document.documentElement.scrollHeight - innerHeight)).toFixed(4));
     if (y < innerHeight * 1.6) hero.style.setProperty('--py', y);
+    updSteps();
   };
   addEventListener('scroll', onScroll, { passive: true });
+  addEventListener('resize', onScroll);
   onScroll();
 
   /* menu mobile */
@@ -46,16 +61,14 @@
   $$('.nav a').forEach(a => a.addEventListener('click', () => setMenu(false)));
   addEventListener('keydown', e => e.key === 'Escape' && setMenu(false));
 
-  /* transisi perpindahan: layar berwarna menyapu, halaman pindah di balik layar */
-  const pages = {
-    beranda: ['Beranda', '#1A1260', '#fff'], keunggulan: ['Keunggulan', '#7A4BFF', '#fff'],
-    paket: ['Paket', '#B23AA8', '#fff'], area: ['Area layanan', '#3B38FF', '#fff'],
-    'cara-pasang': ['Cara pasang', '#FF5FA8', '#1A1260'], faq: ['Tanya jawab', '#FFD166', '#1A1260'],
-    daftar: ['Daftar', '#FF8A5C', '#1A1260']
-  };
-  const wipe = document.createElement('div'), wl = document.createElement('span');
-  wipe.className = 'wipe'; wipe.setAttribute('aria-hidden', 'true'); wipe.append(wl);
-  document.body.append(wipe);
+  /* transisi pindah bagian: kolom warna naik berurutan, halaman pindah di baliknya */
+  const names = { beranda: 'Beranda', keunggulan: 'Keunggulan', paket: 'Paket', area: 'Area layanan', 'cara-pasang': 'Cara pasang', faq: 'Tanya jawab', daftar: 'Daftar' };
+  const tr = document.createElement('div');
+  tr.className = 'tr'; tr.setAttribute('aria-hidden', 'true');
+  tr.innerHTML = '<i></i><i></i><i></i><i></i><i></i><i></i><b></b>';
+  document.body.append(tr);
+  $$('i', tr).forEach((el, k) => el.style.setProperty('--k', k));
+  const lab = $('b', tr);
   let busy = false;
   document.addEventListener('click', e => {
     const a = e.target.closest('a[href^="#"]');
@@ -65,91 +78,35 @@
     e.preventDefault();
     if (busy) return;
     busy = true;
-    const [label, bg, fg] = pages[id] || [id, '#3B38FF', '#fff'];
-    wipe.style.setProperty('--c', bg); wipe.style.setProperty('--tc', fg); wl.textContent = label;
-    wipe.className = 'wipe in';
+    lab.textContent = names[id] || id;
+    tr.className = 'tr on';
+    void tr.offsetWidth;
+    tr.className = 'tr on in';
     setTimeout(() => {
       scrollTo({ top: id === 'beranda' ? 0 : t.getBoundingClientRect().top + scrollY, behavior: 'instant' });
       history.replaceState(null, '', '#' + id);
       t.setAttribute('tabindex', '-1'); t.focus({ preventScroll: true });
       onScroll();
-      wipe.className = 'wipe out';
+      tr.className = 'tr on out';
     }, 850);
-    setTimeout(() => { wipe.className = 'wipe'; busy = false; }, 1550);
+    setTimeout(() => { tr.className = 'tr'; busy = false; }, 1650);
   });
 
-  /* meter: hitung naik setelah tirai pembuka */
-  const meter = $('.meter'), count = $('#count');
+  /* inti aura: hitung naik setelah opening, geser halus mengikuti kursor */
+  const meter = $('.meter'), count = $('#count'), aura = $('.aura');
   meter.classList.add('go');
-  {
-    count.textContent = '0';
-    const t0 = performance.now() + OPEN + 500;
-    (function tick(now) {
-      const k = Math.min(Math.max((now - t0) / 1800, 0), 1);
-      count.textContent = Math.round(10 * (1 - Math.pow(1 - k, 3)));
-      if (k < 1) requestAnimationFrame(tick);
-    })(performance.now());
-  }
-
-  /* riak air berwarna di hero */
-  const cv = $('#water'), ctx = cv.getContext('2d');
-  const pal = [[255, 95, 168], [255, 209, 102], [121, 199, 255]];
-  let w = 0, h = 0, ripples = [], running = false, last = 0, timer = OPEN + 200, lx = -999, ly = -999;
-  const size = () => {
-    const dpr = Math.min(devicePixelRatio || 1, 2);
-    w = hero.clientWidth; h = hero.clientHeight;
-    cv.width = w * dpr; cv.height = h * dpr;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  };
-  const center = () => {
-    const m = $('.dial').getBoundingClientRect(), r = hero.getBoundingClientRect();
-    return [m.left + m.width / 2 - r.left, m.top + m.height / 2 - r.top];
-  };
-  const drop = (x, y, big) => {
-    ripples.push({ x, y, t: 0, c: Math.floor(Math.random() * 3), max: big ? Math.min(w, 520) * 0.8 : 230, n: big ? 3 : 2 });
-    if (ripples.length > 14) ripples.shift();
-  };
-  const ring = (p, i, k) => {
-    const e = 1 - Math.pow(1 - k, 3), r = e * p.max, c = pal[((p.c || 0) + i) % 3];
-    ctx.beginPath();
-    ctx.ellipse(p.x, p.y, r, r * 0.38, 0, 0, Math.PI * 2);
-    ctx.strokeStyle = `rgba(${c[0]},${c[1]},${c[2]},${(1 - k) * 0.7})`;
-    ctx.lineWidth = 2;
-    ctx.stroke();
-  };
-  const frame = now => {
-    if (!running) return;
-    const dt = Math.min(now - last, 50);
-    last = now;
-    ctx.clearRect(0, 0, w, h);
-    timer -= dt;
-    if (timer <= 0) { const [x, y] = center(); drop(x, y, true); timer = 2800; }
-    for (const p of ripples) {
-      p.t += dt;
-      for (let i = 0; i < p.n; i++) {
-        const k = (p.t - i * 280) / 2600;
-        if (k > 0 && k < 1) ring(p, i, k);
-      }
-    }
-    ripples = ripples.filter(p => p.t < 2600 + p.n * 280);
-    requestAnimationFrame(frame);
-  };
-  size();
-  addEventListener('resize', size);
-  {
-    new IntersectionObserver(([e]) => {
-      running = e.isIntersecting;
-      if (running) { last = performance.now(); requestAnimationFrame(frame); }
-    }).observe(hero);
-    hero.addEventListener('pointermove', e => {
-      const r = hero.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
-      if (Math.hypot(x - lx, y - ly) > 80) { lx = x; ly = y; drop(x, y, false); }
-    });
-    hero.addEventListener('pointerdown', e => {
-      const r = hero.getBoundingClientRect();
-      drop(e.clientX - r.left, e.clientY - r.top, true);
-    });
-  }
+  count.textContent = '0';
+  const tc = performance.now() + OPEN + 400;
+  (function tick(now) {
+    const k = clamp((now - tc) / 1800);
+    count.textContent = Math.round(10 * (1 - Math.pow(1 - k, 3)));
+    if (k < 1) requestAnimationFrame(tick);
+  })(performance.now());
+  if (hover) hero.addEventListener('pointermove', e => {
+    const r = hero.getBoundingClientRect();
+    aura.style.setProperty('--ax', ((e.clientX - r.left) / r.width - 0.5).toFixed(3));
+    aura.style.setProperty('--ay', ((e.clientY - r.top) / r.height - 0.5).toFixed(3));
+  });
 
   /* judul section muncul kata per kata */
   $$('.sec h2').forEach(el => {
@@ -172,16 +129,16 @@
   reveal('.rows li, .faq-item, .foot-grid>div');
   reveal('.map, .reg, .check, .chips', 'z');
   reveal('.join .split>div>*');
-  $$('.hs, .plan, .steps').forEach(el => io.observe(el));
+  $$('.hs, .ticket').forEach(el => io.observe(el));
 
-  /* latar halaman berubah warna mengikuti section */
-  const bgs = { keunggulan: '#E9E4FF', paket: '#FFE2EE', area: '#DCEFFF', 'cara-pasang': '#FFE8D6', faq: '#FFF3C7' };
+  /* warna latar halaman berubah mengikuti section */
+  const bgs = { keunggulan: '#EAF8F3', paket: '#FFF0CC', area: '#D6F2EF', 'cara-pasang': '#FFE6D4', faq: '#E4F6EC' };
   const so = new IntersectionObserver(es => es.forEach(e => {
     if (e.isIntersecting) document.body.style.backgroundColor = bgs[e.target.id];
   }), { rootMargin: '-50% 0px -50% 0px' });
   Object.keys(bgs).forEach(id => so.observe($('#' + id)));
 
-  /* cahaya yang mengikuti kursor, tombol magnet, kartu paket miring */
+  /* cahaya kursor, tombol magnet, tiket miring */
   if (hover) {
     const g = document.createElement('div');
     g.className = 'glow';
@@ -201,13 +158,13 @@
       });
       b.addEventListener('pointerleave', () => { b.style.removeProperty('--mx'); b.style.removeProperty('--my'); });
     });
-    const plan = $('.plan');
-    plan.addEventListener('pointermove', e => {
-      const r = plan.getBoundingClientRect();
+    const tk = $('.ticket');
+    tk.addEventListener('pointermove', e => {
+      const r = tk.getBoundingClientRect();
       const x = (e.clientX - r.left) / r.width - 0.5, y = (e.clientY - r.top) / r.height - 0.5;
-      plan.style.transform = `perspective(900px) rotateY(${x * 8}deg) rotateX(${-y * 8}deg) scale(1.02)`;
+      tk.style.transform = `perspective(900px) rotateY(${x * 8}deg) rotateX(${-y * 8}deg) scale(1.02)`;
     });
-    plan.addEventListener('pointerleave', () => { plan.style.transform = ''; });
+    tk.addEventListener('pointerleave', () => { tk.style.transform = ''; });
   }
 
   /* cek area layanan */
