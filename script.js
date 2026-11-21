@@ -12,6 +12,13 @@
   const wait = ms => new Promise(r => setTimeout(r, ms));
 
   /* nomor urut item menu, dipakai animasi muncul berurutan */
+  /* sidebar HP: ikon tiap menu dan kepala panel */
+  const IC = { keunggulan: '<path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.5 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/>', paket: '<path d="M4 8h16v10H4zM4 8l2-4h12l2 4M10 13h4"/>', area: '<path d="M12 21s7-5.6 7-11a7 7 0 10-14 0c0 5.4 7 11 7 11z"/><circle cx="12" cy="10" r="2.4"/>', 'cara-pasang': '<path d="M14.5 6.5l3 3M5 19l1-4L16 5l3 3L9 18z"/>', faq: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 114 2c-.9.6-1.5 1-1.5 2M12 17h.01"/>', daftar: '<path d="M5 12h14M13 6l6 6-6 6"/>' };
+  $$('.nav li a').forEach(a => {
+    const k = a.getAttribute('href').slice(1);
+    if (IC[k]) a.insertAdjacentHTML('afterbegin', `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[k]}</svg>`);
+  });
+  $('.nav ul').insertAdjacentHTML('afterbegin', '<li class="sb-head" aria-hidden="true"><span class="mark"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2"><circle cx="16" cy="16" r="14" opacity=".45"/><circle cx="16" cy="16" r="8.5"/><circle cx="16" cy="16" r="3" fill="currentColor" stroke="none"/></svg></span><b>Aura Net</b><small>Internet stabil, harga tetap</small></li>');
   $$('.nav li').forEach((li, i) => li.style.setProperty('--i', i));
 
   /* kecepatan: hitung naik begitu hero mulai tampil */
@@ -34,8 +41,9 @@
   /* LIQUID GLASS: kaca membelokkan isi di belakangnya (refraksi) lewat filter SVG.
      Peta distorsi dibuat dari bentuk elemen: di tepi (bezel) isi tertarik ke dalam, di tengah datar.
      Hanya Chromium yang bisa memakai filter SVG di backdrop-filter; browser lain jatuh ke kaca buram + kilau tepi. */
-  const lgr = !!window.CSS && CSS.supports('backdrop-filter', 'url(#a)') && /Chrome\//.test(navigator.userAgent) && !/CriOS|EdgiOS|FxiOS/.test(navigator.userAgent);
-  if (lgr) html.classList.add('lgr');
+  let lite = (navigator.hardwareConcurrency || 8) <= 4 || (navigator.deviceMemory || 8) <= 4;
+  let lgr = !lite && !!window.CSS && CSS.supports('backdrop-filter', 'url(#a)') && /Chrome\//.test(navigator.userAgent) && !/CriOS|EdgiOS|FxiOS/.test(navigator.userAgent);
+  if (lgr) html.classList.add('lgr'); else if (lite) html.classList.add('lite');
   const NS = 'http://www.w3.org/2000/svg';
   const mk = (tag, attrs = {}, kids = []) => {
     const e = document.createElementNS(NS, tag);
@@ -77,16 +85,17 @@
       document.body.append(defs);
     }
     const img = mk('feImage', { x: 0, y: 0, preserveAspectRatio: 'none', result: 'i' });
-    defs.append(mk('filter', { id, x: 0, y: 0, width: 1, height: 1, 'color-interpolation-filters': 'sRGB' }, [
+    const base = [
       mk('feFlood', { 'flood-color': 'rgb(128,128,128)', result: 'n' }),
       img,
-      mk('feMerge', { result: 'map' }, [mk('feMergeNode', { in: 'n' }), mk('feMergeNode', { in: 'i' })]),
-      ...CH.flatMap(([c, k, m]) => [
-        mk('feDisplacementMap', { in: 'SourceGraphic', in2: 'map', scale: (opt.scale * k).toFixed(1), xChannelSelector: 'R', yChannelSelector: 'G', result: 'd' + c }),
-        mk('feColorMatrix', { in: 'd' + c, type: 'matrix', values: m, result: c })]),
+      mk('feMerge', { result: 'map' }, [mk('feMergeNode', { in: 'n' }), mk('feMergeNode', { in: 'i' })])];
+    const one = [mk('feDisplacementMap', { in: 'SourceGraphic', in2: 'map', scale: opt.scale.toFixed(1), xChannelSelector: 'R', yChannelSelector: 'G' })];
+    const rgb = [...CH.flatMap(([c, k, m]) => [
+      mk('feDisplacementMap', { in: 'SourceGraphic', in2: 'map', scale: (opt.scale * k).toFixed(1), xChannelSelector: 'R', yChannelSelector: 'G', result: 'd' + c }),
+      mk('feColorMatrix', { in: 'd' + c, type: 'matrix', values: m, result: c })]),
       mk('feBlend', { in: 'r', in2: 'g', mode: 'screen', result: 'rg' }),
-      mk('feBlend', { in: 'rg', in2: 'b', mode: 'screen' })
-    ]));
+      mk('feBlend', { in: 'rg', in2: 'b', mode: 'screen' })];
+    defs.append(mk('filter', { id, x: 0, y: 0, width: 1, height: 1, 'color-interpolation-filters': 'sRGB' }, [...base, ...(opt.disp ? rgb : one)]));
     let key = '';
     return (w, h, R) => {
       const k = Math.round(w) + 'x' + Math.round(h) + 'x' + Math.round(R);
@@ -105,15 +114,14 @@
     run();
   };
   const ul = $('.nav ul');
-  bind('lg-bar', ul, { bezel: 18, scale: 30 });
-  bind('lg-logo', $('.site .logo'), { bezel: 16, scale: 26 });
-  bind('lg-btn', menuBtn, { bezel: 12, scale: 22 });
+  bind('lg-bar', ul, { bezel: 22, scale: 46 });
+  bind('lg-logo', $('.site .logo'), { bezel: 20, scale: 40, disp: 1 });
+  bind('lg-btn', menuBtn, { bezel: 14, scale: 30, disp: 1 });
 
   /* tema kaca mengikuti latar di bawah header: gelap -> kaca terang, terang -> kaca putih dengan teks gelap */
-  const theme = () => {
-    const under = document.elementsFromPoint(innerWidth / 2, 36).find(e => !head.contains(e));
-    head.classList.toggle('onlight', !(under && under.closest('.dark')));
-  };
+  let darkR = [];
+  const cacheDark = () => { darkR = $$('.hero.dark, .sec.dark, .foot.dark').map(e => { const r = e.getBoundingClientRect(); return [r.top + scrollY, r.bottom + scrollY]; }); };
+  const theme = () => { const y = scrollY + 36; head.classList.toggle('onlight', !darkR.some(([a, b]) => y >= a && y < b)); };
 
   /* lensa cair: pil kaca meluncur ke tautan yang disorot kursor atau bagian yang sedang dibaca */
   const links = $$('.nav a'), navLinks = $$('.nav a:not(.nav-cta)');
@@ -121,7 +129,7 @@
   pill.className = 'pill';
   pill.setAttribute('aria-hidden', 'true');
   nav.prepend(pill);
-  const lensUpds = navLinks.map((_, i) => glass('lg-lens-' + i, { bezel: 14, scale: 30, magnify: 0.1 }));
+  const lensUpds = navLinks.map((_, i) => glass('lg-lens-' + i, { bezel: 18, scale: 44, magnify: 0.22, disp: 1 }));
   const fitLens = () => navLinks.forEach((a, i) => lensUpds[i](a.offsetWidth, a.offsetHeight, a.offsetHeight / 2));
   if (lgr) { new ResizeObserver(fitLens).observe(ul); fitLens(); }
   let active = null, hoverEl = null, focusEl = null, shown = false, prevC = null;
@@ -158,23 +166,19 @@
     a.addEventListener('pointerleave', () => { hoverEl = null; syncSoon(); });
     a.addEventListener('focus', () => { focusEl = a; syncSoon(); });
     a.addEventListener('blur', () => { focusEl = null; syncSoon(); });
-    a.addEventListener('pointerdown', () => pill.classList.add('press'));
+    a.addEventListener('pointerdown', e => { pill.classList.add('press'); if (e.pointerType === 'touch') { hoverEl = a; syncSoon(); } });
   });
   ['pointerup', 'pointercancel', 'dragend'].forEach(ev => addEventListener(ev, () => pill.classList.remove('press')));
-  const spy = () => {
+  const spy = tp => {
     let cur = null;
-    links.forEach(a => {
-      const t = document.getElementById(a.getAttribute('href').slice(1));
-      if (t && t.getBoundingClientRect().top <= innerHeight * 0.45) cur = a;
-    });
+    links.forEach((a, i) => { if (tp[i] <= innerHeight * 0.45) cur = a; });
     if (cur && cur.classList.contains('nav-cta')) cur = null;
     if (cur !== active) { active = cur; sync(); }
   };
 
   /* kabel cara pasang: menyala sesuai posisi scroll */
   const steps = $('.steps'), stepLis = $$('li', steps);
-  function updSteps() {
-    const r = steps.getBoundingClientRect();
+  function updSteps(r) {
     const p = clamp((innerHeight * 0.8 - r.top) / (r.height + innerHeight * 0.15));
     steps.style.setProperty('--p', p.toFixed(3));
     stepLis.forEach((li, i) => {
@@ -187,18 +191,23 @@
   const prog = document.createElement('div');
   prog.className = 'prog';
   document.body.append(prog);
-  const onScroll = () => {
+  let tickId = 0;
+  const run = () => {
+    tickId = 0;
     const y = scrollY;
+    const sr = steps.getBoundingClientRect();                       /* semua pembacaan dulu */
+    const tp = links.map(a => { const t = document.getElementById(a.getAttribute('href').slice(1)); return t ? t.getBoundingClientRect().top : 1e9; });
     head.classList.toggle('scrolled', y > 40);
     fab.classList.toggle('show', y > innerHeight * 0.8);
     prog.style.setProperty('--p', (y / Math.max(1, document.documentElement.scrollHeight - innerHeight)).toFixed(4));
     if (y < innerHeight * 1.6) hero.style.setProperty('--py', y);
-    updSteps();
-    spy();
-    theme();
+    updSteps(sr); spy(tp); theme();
   };
+  const onScroll = () => { if (!tickId) tickId = requestAnimationFrame(run); };
   addEventListener('scroll', onScroll, { passive: true });
-  addEventListener('resize', () => { onScroll(); sync(); });
+  addEventListener('resize', () => { cacheDark(); onScroll(); sync(); });
+  addEventListener('load', () => { cacheDark(); onScroll(); });
+  cacheDark();
   onScroll();
 
   /* OPENING: logo tergambar di tengah, terbang ke logo menu, lalu cahaya melebar dari situ */
@@ -257,14 +266,10 @@
     const dy = (b.top + b.height / 2) - (a.top + a.height / 2);
     const s = b.width / a.width;
     intro.classList.add('flying');
-    const o = { duration: 1000, delay: 180, fill: 'forwards' };
-    fly.animate(
-      [{ transform: 'translateX(0px)' }, { transform: `translateX(${dx}px)` }],
-      { ...o, easing: 'cubic-bezier(.7,0,.25,1)' });
-    fi.animate([
-      { transform: 'translateY(0px) scale(1)', backgroundColor: 'rgba(207,245,231,0)', color: '#ffffff', filter: 'drop-shadow(0 0 18px rgba(47,209,197,.6))' },
-      { transform: `translateY(${dy}px) scale(${s})`, backgroundColor: 'rgb(207,245,231)', color: 'rgb(5,46,54)', filter: 'drop-shadow(0 0 0px rgba(47,209,197,0))' }
-    ], { ...o, easing: 'cubic-bezier(.4,0,.15,1)' }).finished.then(land, land);
+    /* satu transform, satu easing: x, y, dan ukuran bergerak serempak sehingga jalurnya lurus */
+    const o = { duration: 950, delay: 160, fill: 'forwards', easing: 'cubic-bezier(.65,0,.2,1)' };
+    fly.animate([{ transform: 'translate3d(0,0,0) scale(1)' }, { transform: `translate3d(${dx}px,${dy}px,0) scale(${s})` }], o);
+    fi.animate([{ backgroundColor: 'rgba(207,245,231,0)', color: '#ffffff' }, { backgroundColor: 'rgb(207,245,231)', color: 'rgb(5,46,54)' }], o).finished.then(land, land);
   }
 
   if (reduce || !intro || !mark || !intro.animate) {
@@ -280,6 +285,7 @@
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(sync);
 
   /* menu mobile: panel membuka sebagai lingkaran dari tombol menu */
+  let readyT = 0;
   const setMenu = open => {
     if (open) {
       const r = menuBtn.getBoundingClientRect();
@@ -287,38 +293,45 @@
       nav.style.setProperty('--my', (r.top + r.height / 2) + 'px');
     }
     head.classList.toggle('open', open);
+    clearTimeout(readyT);
+    if (open) readyT = setTimeout(() => { head.classList.add('ready'); sync(); }, 780); else { head.classList.remove('ready'); hoverEl = null; }
     document.body.classList.toggle('lock', open);
     menuBtn.setAttribute('aria-expanded', open);
     menuBtn.setAttribute('aria-label', open ? 'Tutup menu' : 'Buka menu');
     requestAnimationFrame(sync);
   };
   menuBtn.addEventListener('click', () => setMenu(!head.classList.contains('open')));
-  $$('.nav a').forEach(a => a.addEventListener('click', () => setMenu(false)));
+  $$('.nav a').forEach(a => a.addEventListener('click', () => setTimeout(() => setMenu(false), matchMedia('(max-width:899px)').matches ? 200 : 0)));
   addEventListener('keydown', e => e.key === 'Escape' && setMenu(false));
 
-  /* transisi pindah bagian: layar memburam sebentar, halaman pindah di baliknya, lalu jernih lagi */
-  const veil = document.createElement('div');
-  veil.className = 'veil';
-  veil.setAttribute('aria-hidden', 'true');
-  document.body.append(veil);
-  let busy = false;
+  /* pindah bagian: luncur halus lewat rAF (tanpa blur layar penuh yang berat) */
+  let gl = 0;
+  const glide = (to, done) => {
+    cancelAnimationFrame(gl);
+    const from = scrollY, dist = to - from;
+    if (reduce || Math.abs(dist) < 4) { scrollTo({ top: to, behavior: 'instant' }); done && done(); return; }
+    const D = clamp(Math.abs(dist) / 2.2, 450, 950), t0 = performance.now();
+    html.classList.add('gliding');
+    const stop = () => { cancelAnimationFrame(gl); html.classList.remove('gliding'); removeEventListener('wheel', stop); removeEventListener('touchstart', stop); };
+    addEventListener('wheel', stop, { passive: true }); addEventListener('touchstart', stop, { passive: true });
+    (function step(now) {
+      const k = clamp((now - t0) / D);
+      const e = k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+      scrollTo({ top: from + dist * e, behavior: 'instant' });
+      if (k < 1) gl = requestAnimationFrame(step); else { stop(); done && done(); }
+    })(t0);
+  };
   document.addEventListener('click', e => {
     const a = e.target.closest('a[href^="#"]');
     if (!a || e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;
     const id = a.getAttribute('href').slice(1), t = id && id !== 'main' && document.getElementById(id);
     if (!t) return;
     e.preventDefault();
-    if (busy) return;
-    busy = true;
-    veil.classList.add('on');
-    setTimeout(() => {
-      scrollTo({ top: id === 'beranda' ? 0 : t.getBoundingClientRect().top + scrollY, behavior: 'instant' });
+    const go = () => glide(id === 'beranda' ? 0 : t.getBoundingClientRect().top + scrollY, () => {
       history.replaceState(null, '', '#' + id);
       t.setAttribute('tabindex', '-1'); t.focus({ preventScroll: true });
-      onScroll();
-    }, reduce ? 120 : 400);
-    setTimeout(() => veil.classList.remove('on'), reduce ? 200 : 520);
-    setTimeout(() => { busy = false; }, reduce ? 500 : 1150);
+    });
+    head.classList.contains('open') ? setTimeout(go, 220) : go();
   });
 
   if (hover) hero.addEventListener('pointermove', e => {
@@ -362,13 +375,13 @@
     const g = document.createElement('div');
     g.className = 'glow';
     document.body.append(g);
-    let gx = innerWidth / 2, gy = innerHeight / 2, tx = gx, ty = gy;
-    addEventListener('pointermove', e => { tx = e.clientX; ty = e.clientY; });
-    (function loop() {
-      gx += (tx - gx) * 0.12; gy += (ty - gy) * 0.12;
-      g.style.transform = `translate(${gx - 200}px,${gy - 200}px)`;
-      requestAnimationFrame(loop);
-    })();
+    let gx = innerWidth / 2, gy = innerHeight / 2, tx = gx, ty = gy, gr = 0;
+    const loop = () => {
+      gx += (tx - gx) * 0.14; gy += (ty - gy) * 0.14;
+      g.style.transform = `translate3d(${(gx - 200).toFixed(1)}px,${(gy - 200).toFixed(1)}px,0)`;
+      gr = Math.abs(tx - gx) > 0.5 || Math.abs(ty - gy) > 0.5 ? requestAnimationFrame(loop) : 0;
+    };
+    addEventListener('pointermove', e => { tx = e.clientX; ty = e.clientY; if (!gr) gr = requestAnimationFrame(loop); }, { passive: true });
     $$('.btn').forEach(b => {
       b.addEventListener('pointermove', e => {
         const r = b.getBoundingClientRect();
@@ -434,6 +447,21 @@
     catch { copy.textContent = '0895 6300 94597'; }
     setTimeout(() => { copy.textContent = 'Salin nomor'; }, 2200);
   });
+  /* bila perangkat terasa berat (banyak frame lambat), matikan filter SVG dan efek mahal secara otomatis */
+  const goLite = () => {
+    lite = true; lgr = false;
+    html.classList.remove('lgr'); html.classList.add('lite');
+    pill.style.webkitBackdropFilter = pill.style.backdropFilter = '';
+  };
+  let bad = 0, nf = 0, lastT = 0, mon = 0;
+  const watch = now => {
+    if (lastT) { const dt = now - lastT; if (dt > 34 && dt < 500) bad++; nf++; }
+    lastT = now;
+    if (nf >= 45) { if (bad / nf > 0.3 && !lite) goLite(); bad = nf = 0; }
+    if (!lite && mon++ < 600) requestAnimationFrame(watch);
+  };
+  if (!lite) requestAnimationFrame(watch);
+
   $('#regForm').addEventListener('submit', e => {
     e.preventDefault();
     const f = new FormData(e.target);
