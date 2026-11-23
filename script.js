@@ -124,7 +124,7 @@
   const theme = () => { const y = scrollY + 36; head.classList.toggle('onlight', !darkR.some(([a, b]) => y >= a && y < b)); };
 
   /* lensa cair: pil kaca meluncur ke tautan yang disorot kursor atau bagian yang sedang dibaca */
-  const links = $$('.nav a'), navLinks = $$('.nav a:not(.nav-cta)');
+  const links = $$('.nav li a'), navLinks = links;
   const pill = document.createElement('span');
   pill.className = 'pill';
   pill.setAttribute('aria-hidden', 'true');
@@ -138,6 +138,7 @@
   const place = a => {
     navLinks.forEach(l => l.classList.toggle('on', l === a));
     if (!a) { pill.classList.remove('show'); shown = false; prevC = null; return; }
+    pill.classList.toggle('top', a.classList.contains('nav-cta'));
     const w = a.offsetWidth, h = a.offsetHeight;
     let x = 0, y = 0;   /* posisi relatif ke .nav; menyusuri rantai induk karena li yang bertransform ikut jadi offsetParent */
     for (let e = a; e && e !== nav; e = e.offsetParent) { x += e.offsetLeft; y += e.offsetTop; }
@@ -172,7 +173,6 @@
   const spy = tp => {
     let cur = null;
     links.forEach((a, i) => { if (tp[i] <= innerHeight * 0.45) cur = a; });
-    if (cur && cur.classList.contains('nav-cta')) cur = null;
     if (cur !== active) { active = cur; sync(); }
   };
 
@@ -306,18 +306,20 @@
 
   /* pindah bagian: luncur halus lewat rAF (tanpa blur layar penuh yang berat) */
   let gl = 0;
-  const glide = (to, done) => {
+  const glide = (getTo, done) => {
     cancelAnimationFrame(gl);
-    const from = scrollY, dist = to - from;
-    if (reduce || Math.abs(dist) < 4) { scrollTo({ top: to, behavior: 'instant' }); done && done(); return; }
-    const D = clamp(Math.abs(dist) / 2.2, 450, 950), t0 = performance.now();
+    const maxY = () => document.documentElement.scrollHeight - innerHeight;
+    const from = scrollY, dist0 = Math.min(getTo(), maxY()) - from;
+    if (reduce || Math.abs(dist0) < 4) { scrollTo({ top: Math.min(getTo(), maxY()), behavior: 'instant' }); done && done(); return; }
+    const D = clamp(Math.abs(dist0) / 2.4, 420, 800), t0 = performance.now();
     html.classList.add('gliding');
-    const stop = () => { cancelAnimationFrame(gl); html.classList.remove('gliding'); removeEventListener('wheel', stop); removeEventListener('touchstart', stop); };
-    addEventListener('wheel', stop, { passive: true }); addEventListener('touchstart', stop, { passive: true });
+    const stop = () => { cancelAnimationFrame(gl); html.classList.remove('gliding'); removeEventListener('touchstart', stop); };
+    addEventListener('touchstart', stop, { passive: true });
     (function step(now) {
       const k = clamp((now - t0) / D);
       const e = k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
-      scrollTo({ top: from + dist * e, behavior: 'instant' });
+      const to = Math.min(getTo(), maxY());
+      scrollTo({ top: from + (to - from) * e, behavior: 'instant' });
       if (k < 1) gl = requestAnimationFrame(step); else { stop(); done && done(); }
     })(t0);
   };
@@ -327,7 +329,7 @@
     const id = a.getAttribute('href').slice(1), t = id && id !== 'main' && document.getElementById(id);
     if (!t) return;
     e.preventDefault();
-    const go = () => glide(id === 'beranda' ? 0 : t.getBoundingClientRect().top + scrollY, () => {
+    const go = () => glide(() => id === 'beranda' ? 0 : t.getBoundingClientRect().top + scrollY, () => {
       history.replaceState(null, '', '#' + id);
       t.setAttribute('tabindex', '-1'); t.focus({ preventScroll: true });
     });
