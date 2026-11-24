@@ -52,31 +52,22 @@
     return e;
   };
   let defs = null;
-  const mapURL = (w, h, R, bezel, magnify) => {
-    const c = document.createElement('canvas');
-    c.width = Math.max(1, Math.round(w)); c.height = Math.max(1, Math.round(h));
-    const g = c.getContext('2d'), img = g.createImageData(c.width, c.height), d = img.data;
-    R = Math.min(R, w / 2, h / 2);
-    for (let y = 0; y < c.height; y++) for (let x = 0; x < c.width; x++) {
-      const dx = x + 0.5 - w / 2, dy = y + 0.5 - h / 2;
-      const qx = Math.abs(dx) - (w / 2 - R), qy = Math.abs(dy) - (h / 2 - R);
-      const ox = Math.max(qx, 0), oy = Math.max(qy, 0), out = Math.hypot(ox, oy);
-      const depth = R - out - Math.min(Math.max(qx, qy), 0);   /* jarak dari tepi ke dalam */
-      let nx, ny;                                              /* normal keluar */
-      if (out > 0) { nx = Math.sign(dx) * ox / out; ny = Math.sign(dy) * oy / out; }
-      else if (qx > qy) { nx = Math.sign(dx); ny = 0; } else { nx = 0; ny = Math.sign(dy); }
-      const mag = depth < bezel ? Math.pow(1 - depth / bezel, 2.4) : 0;
-      const vx = Math.max(-1, Math.min(1, -nx * mag - (dx / (w / 2)) * magnify));
-      const vy = Math.max(-1, Math.min(1, -ny * mag - (dy / (h / 2)) * magnify));
-      const o = (y * c.width + x) * 4;
-      d[o] = 128 + vx * 127; d[o + 1] = 128 + vy * 127; d[o + 2] = 128; d[o + 3] = 255;
-    }
-    g.putImageData(img, 0, 0);
-    return c.toDataURL('image/png');
+  /* peta distorsi: gradien merah (x) dan hijau (y) hanya aktif di tepi (rim), bagian tengah netral #808080 */
+  const mapURL = (w, h, R, rim = 3) => {
+    w = Math.round(w); h = Math.round(h); R = Math.max(1, Math.min(R, w / 2, h / 2));
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><defs>` +
+      `<linearGradient id="Y" x1="0" x2="0" y1="3%" y2="97%"><stop offset="0%" stop-color="#0F0"/><stop offset="100%" stop-color="#000"/></linearGradient>` +
+      `<linearGradient id="X" x1="2%" x2="98%" y1="0" y2="0"><stop offset="0%" stop-color="#F00"/><stop offset="100%" stop-color="#000"/></linearGradient></defs>` +
+      `<rect width="${w}" height="${h}" fill="#808080"/><g filter="blur(2px)">` +
+      `<rect width="${w}" height="${h}" fill="#000080"/>` +
+      `<rect width="${w}" height="${h}" fill="url(#Y)" style="mix-blend-mode:screen"/>` +
+      `<rect width="${w}" height="${h}" fill="url(#X)" style="mix-blend-mode:screen"/>` +
+      `<rect x="${rim}" y="${rim}" width="${w - rim * 2}" height="${h - rim * 2}" rx="${Math.max(0, R - rim)}" ry="${Math.max(0, R - rim)}" fill="#808080" filter="blur(3px)"/></g></svg>`;
+    return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
   };
   const CH = [['r', 1, '1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0'],
-              ['g', 0.9, '0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0'],
-              ['b', 0.8, '0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0']];
+              ['g', 0.989, '0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0'],
+              ['b', 0.977, '0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0']];
   const glass = (id, opt) => {
     if (!lgr) return () => {};
     if (!defs) {
@@ -89,19 +80,23 @@
       mk('feFlood', { 'flood-color': 'rgb(128,128,128)', result: 'n' }),
       img,
       mk('feMerge', { result: 'map' }, [mk('feMergeNode', { in: 'n' }), mk('feMergeNode', { in: 'i' })])];
-    const one = [mk('feDisplacementMap', { in: 'SourceGraphic', in2: 'map', scale: opt.scale.toFixed(1), xChannelSelector: 'R', yChannelSelector: 'G' })];
+    const one = [mk('feDisplacementMap', { in: 'SourceGraphic', in2: 'map', scale: 0, 'data-k': 1, xChannelSelector: 'R', yChannelSelector: 'G' })];
     const rgb = [...CH.flatMap(([c, k, m]) => [
-      mk('feDisplacementMap', { in: 'SourceGraphic', in2: 'map', scale: (opt.scale * k).toFixed(1), xChannelSelector: 'R', yChannelSelector: 'G', result: 'd' + c }),
+      mk('feDisplacementMap', { in: 'SourceGraphic', in2: 'map', scale: 0, 'data-k': k, xChannelSelector: 'R', yChannelSelector: 'G', result: 'd' + c }),
       mk('feColorMatrix', { in: 'd' + c, type: 'matrix', values: m, result: c })]),
       mk('feBlend', { in: 'r', in2: 'g', mode: 'screen', result: 'rg' }),
       mk('feBlend', { in: 'rg', in2: 'b', mode: 'screen' })];
-    defs.append(mk('filter', { id, x: 0, y: 0, width: 1, height: 1, 'color-interpolation-filters': 'sRGB' }, [...base, ...(opt.disp ? rgb : one)]));
+    const fe = mk('filter', { id, x: 0, y: 0, width: 1, height: 1, 'color-interpolation-filters': 'sRGB' }, [...base, ...(opt.disp ? rgb : one)]);
+    defs.append(fe);
+    const dms = [...fe.querySelectorAll('feDisplacementMap')];
     let key = '';
     return (w, h, R) => {
       const k = Math.round(w) + 'x' + Math.round(h) + 'x' + Math.round(R);
       if (k === key || w < 4 || h < 4) return;
       key = k;
-      img.setAttribute('href', mapURL(w, h, R, opt.bezel, opt.magnify || 0));
+      const S = Math.min(opt.max || 1e9, (opt.k || 0.62) * Math.min(w, h));   /* contoh: 174 untuk 420x280 */
+      dms.forEach(n => n.setAttribute('scale', (S * (+n.getAttribute('data-k') || 1)).toFixed(1)));
+      img.setAttribute('href', mapURL(w, h, R, opt.rim || 3));
       img.setAttribute('width', w.toFixed(1));
       img.setAttribute('height', h.toFixed(1));
     };
@@ -114,9 +109,9 @@
     run();
   };
   const ul = $('.nav ul');
-  bind('lg-bar', ul, { bezel: 22, scale: 46 });
-  bind('lg-logo', $('.site .logo'), { bezel: 20, scale: 40, disp: 1 });
-  bind('lg-btn', menuBtn, { bezel: 14, scale: 30, disp: 1 });
+  bind('lg-bar', ul, { k: 0.62, max: 120 });
+  bind('lg-logo', $('.site .logo'), { k: 0.62, disp: 1 });
+  bind('lg-btn', menuBtn, { k: 0.62, disp: 1 });
 
   /* tema kaca mengikuti latar di bawah header: gelap -> kaca terang, terang -> kaca putih dengan teks gelap */
   let darkR = [];
@@ -129,7 +124,7 @@
   pill.className = 'pill';
   pill.setAttribute('aria-hidden', 'true');
   nav.prepend(pill);
-  const lensUpds = navLinks.map((_, i) => glass('lg-lens-' + i, { bezel: 18, scale: 44, magnify: 0.22, disp: 1 }));
+  const lensUpds = navLinks.map((_, i) => glass('lg-lens-' + i, { k: 0.62, disp: 1 }));
   const fitLens = () => navLinks.forEach((a, i) => lensUpds[i](a.offsetWidth, a.offsetHeight, a.offsetHeight / 2));
   if (lgr) { new ResizeObserver(fitLens).observe(ul); fitLens(); }
   let active = null, hoverEl = null, focusEl = null, shown = false, prevC = null;
@@ -150,7 +145,7 @@
     pill.style.setProperty('--l', x + 'px'); pill.style.setProperty('--w', w + 'px');
     pill.style.setProperty('--t', y + 'px'); pill.style.setProperty('--h', h + 'px');
     if (lgr) {
-      const f = 'url(#lg-lens-' + navLinks.indexOf(a) + ') blur(.4px) saturate(2) brightness(1.15)';
+      const f = 'blur(1px) url(#lg-lens-' + navLinks.indexOf(a) + ') blur(2px) saturate(1.5) brightness(1.1)';
       pill.style.webkitBackdropFilter = f; pill.style.backdropFilter = f;
     }
     if (!shown) { void pill.offsetWidth; pill.classList.remove('snap'); shown = true; }

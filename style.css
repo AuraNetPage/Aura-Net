@@ -78,7 +78,7 @@ html:not(.js) .intro{display:none}
 .btn-ghost:hover{border-color:#fff;background:rgba(255,255,255,.1)}
 
 /* header: liquid glass */
-.site{--ink:#fff;--lg-a:rgba(255,255,255,.15);--lg-b:rgba(255,255,255,.04);--sh:.26;--lg-shadow:rgba(8,7,36,.5);--lens-a:rgba(255,255,255,.32);--lens-b:color-mix(in srgb,var(--aqua) 16%,transparent);--rim-a:rgba(255,255,255,.95);--rim-b:rgba(255,255,255,.2);--rim-c:rgba(255,255,255,.7);--mk:var(--mint);--mk-ink:var(--deep);position:fixed;inset:0 0 auto;z-index:30;color:var(--ink);transition:color .35s}
+.site{--ink:#fff;--lg-a:rgba(255,255,255,.21);--lg-b:rgba(255,255,255,.04);--sh:.26;--lg-shadow:rgba(0,0,0,.2);--lens-a:rgba(255,255,255,.32);--lens-b:color-mix(in srgb,var(--aqua) 16%,transparent);--rim-a:rgba(255,255,255,.95);--rim-b:rgba(255,255,255,.2);--rim-c:rgba(255,255,255,.7);--mk:var(--mint);--mk-ink:var(--deep);position:fixed;inset:0 0 auto;z-index:30;color:var(--ink);transition:color .35s}
 .site.onlight:not(.open){--sh:.5;--ink:var(--deep);--lg-a:rgba(255,255,255,.55);--lg-b:rgba(255,255,255,.2);--lg-shadow:color-mix(in srgb,var(--deep) 28%,transparent);--lens-a:rgba(255,255,255,.75);--lens-b:rgba(255,255,255,.25);--rim-a:#fff;--rim-b:color-mix(in srgb,var(--deep) 14%,transparent);--rim-c:color-mix(in srgb,var(--deep) 30%,transparent)}
 .bar{display:flex;align-items:center;justify-content:space-between;height:4.5rem}
 .logo{display:inline-flex;align-items:center;gap:.7rem;font:800 1.35rem var(--d);text-decoration:none;position:relative;z-index:2}
@@ -92,14 +92,14 @@ html:not(.js) .intro{display:none}
 .js:not(.landed) .wm{opacity:0;transform:translateX(-14px)}
 
 /* kaca: lapisan bawah (isi yang dibelokkan + tint) dan lapisan atas (kilau tepi) */
-.site .logo::before,.nav ul::before,.menu-btn::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:999px;background:radial-gradient(120% 95% at 16% -12%,rgba(255,255,255,var(--sh)),transparent 48%),radial-gradient(90% 70% at 92% 118%,rgba(255,255,255,.14),transparent 55%),linear-gradient(135deg,var(--lg-a),var(--lg-b) 55%,var(--lg-a));-webkit-backdrop-filter:blur(6px) saturate(1.8) brightness(1.1);backdrop-filter:blur(6px) saturate(1.8) brightness(1.1);box-shadow:0 18px 40px -12px var(--lg-shadow),0 3px 8px rgba(8,7,36,.22),inset 0 1.5px 0 rgba(255,255,255,.8),inset 0 -1.5px 0 rgba(255,255,255,.3),inset 1.5px 0 0 rgba(255,255,255,.35),inset -1.5px 0 0 rgba(255,255,255,.25),inset 0 14px 18px -10px rgba(255,255,255,.3),inset 0 -14px 18px -10px rgba(255,255,255,.15),inset 0 0 30px rgba(255,255,255,.07)}
+.site .logo::before,.nav ul::before,.menu-btn::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:999px;background:var(--lg-a);-webkit-backdrop-filter:blur(8px) saturate(1.8) brightness(1.15) contrast(1.05);backdrop-filter:blur(8px) saturate(1.8) brightness(1.15) contrast(1.05);box-shadow:inset 0 0 0 1px rgba(255,255,255,.15),inset 1.5px 1.5px 0 rgba(255,255,255,.5),inset 0 0 12px rgba(255,255,255,.2),0 8px 32px var(--lg-shadow)}
 /* rim: tepi kaca menangkap cahaya dari kiri atas dan memantul di kanan bawah */
 .site .logo::after,.nav ul::after,.menu-btn::after,.pill::after{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.8px;pointer-events:none;background:linear-gradient(155deg,var(--rim-a) 0,rgba(255,255,255,.18) 18%,transparent 38%,transparent 58%,var(--rim-b) 80%,var(--rim-c) 100%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude}
 .site .logo::after,.nav ul::after,.menu-btn::after{border-radius:999px}
 /* refraksi sungguhan (Chromium): isi di belakang kaca dibelokkan peta distorsi SVG */
-.lgr .nav ul::before{-webkit-backdrop-filter:url(#lg-bar) blur(2px) saturate(1.9) brightness(1.1);backdrop-filter:url(#lg-bar) blur(2px) saturate(1.9) brightness(1.1)}
-.lgr .site .logo::before{-webkit-backdrop-filter:url(#lg-logo) blur(2px) saturate(1.9) brightness(1.1);backdrop-filter:url(#lg-logo) blur(2px) saturate(1.9) brightness(1.1)}
-.lgr .menu-btn::before{-webkit-backdrop-filter:url(#lg-btn) blur(2px) saturate(1.9) brightness(1.1);backdrop-filter:url(#lg-btn) blur(2px) saturate(1.9) brightness(1.1)}
+.lgr .nav ul::before{-webkit-backdrop-filter:blur(1px) url(#lg-bar) blur(2px) saturate(1.5) brightness(1.1);backdrop-filter:blur(1px) url(#lg-bar) blur(2px) saturate(1.5) brightness(1.1)}
+.lgr .site .logo::before{-webkit-backdrop-filter:blur(1px) url(#lg-logo) blur(2px) saturate(1.5) brightness(1.1);backdrop-filter:blur(1px) url(#lg-logo) blur(2px) saturate(1.5) brightness(1.1)}
+.lgr .menu-btn::before{-webkit-backdrop-filter:blur(1px) url(#lg-btn) blur(2px) saturate(1.5) brightness(1.1);backdrop-filter:blur(1px) url(#lg-btn) blur(2px) saturate(1.5) brightness(1.1)}
 
 .nav{position:relative}
 .nav ul{position:relative;display:flex;align-items:center;gap:.1rem;padding:.4rem}
@@ -111,7 +111,7 @@ html:not(.js) .intro{display:none}
 .nav .nav-cta:hover{transform:scale(1.06)}
 
 /* lensa cair: pil aktif berupa kaca; tepi depan bergerak lebih dulu, tepi belakang menyusul, jadi meregang seperti tetesan */
-.pill{--ez:cubic-bezier(.3,1.14,.5,1);position:absolute;z-index:1;left:var(--l,0px);right:calc(100% - var(--l,0px) - var(--w,0px));top:var(--t,0px);bottom:calc(100% - var(--t,0px) - var(--h,0px));border-radius:999px;pointer-events:none;background:radial-gradient(100% 130% at 28% -25%,rgba(255,255,255,.42),transparent 55%),radial-gradient(80% 90% at 85% 125%,rgba(255,255,255,.2),transparent 60%),linear-gradient(180deg,var(--lens-a),rgba(255,255,255,.04) 55%,var(--lens-a)),var(--lens-b);-webkit-backdrop-filter:blur(1px) saturate(2) brightness(1.18);backdrop-filter:blur(1px) saturate(2) brightness(1.18);box-shadow:0 14px 28px -8px var(--lg-shadow),0 2px 5px rgba(8,7,36,.2),inset 0 2px 1px rgba(255,255,255,.75),inset 0 -2.5px 3px rgba(255,255,255,.28),inset 2px 0 2px rgba(255,255,255,.22),inset -2px 0 2px rgba(255,255,255,.18),inset 0 0 20px rgba(255,255,255,.14);opacity:0;transform:scale(.86);transition:left var(--dl,.5s) var(--ez),right var(--dr,.5s) var(--ez),top var(--dt,.5s) var(--ez),bottom var(--db,.5s) var(--ez),transform .45s var(--ez),opacity .3s}
+.pill{--ez:cubic-bezier(.3,1.14,.5,1);position:absolute;z-index:1;left:var(--l,0px);right:calc(100% - var(--l,0px) - var(--w,0px));top:var(--t,0px);bottom:calc(100% - var(--t,0px) - var(--h,0px));border-radius:999px;pointer-events:none;background:linear-gradient(var(--lens-b),var(--lens-b)),var(--lens-a);-webkit-backdrop-filter:blur(8px) saturate(1.8) brightness(1.15) contrast(1.05);backdrop-filter:blur(8px) saturate(1.8) brightness(1.15) contrast(1.05);box-shadow:inset 0 0 0 1px rgba(255,255,255,.15),inset 1.5px 1.5px 0 rgba(255,255,255,.5),inset 0 0 12px rgba(255,255,255,.2),0 8px 24px var(--lg-shadow);opacity:0;transform:scale(.86);transition:left var(--dl,.5s) var(--ez),right var(--dr,.5s) var(--ez),top var(--dt,.5s) var(--ez),bottom var(--db,.5s) var(--ez),transform .45s var(--ez),opacity .3s}
 .pill.show{opacity:1;transform:none}
 .pill.top{z-index:3}
 .pill.press{transform:scale(1.14,1.24)}
@@ -395,7 +395,7 @@ h1{font-size:clamp(2.5rem,6vw,5.2rem);font-weight:900;line-height:.96;letter-spa
 /* mode ringan otomatis untuk perangkat yang terasa berat */
 .lite .glow{display:none}
 .lite .ticket,.lite .led,.lite .wdot{filter:none}
-.lite .site .logo::before,.lite .nav ul::before,.lite .menu-btn::before{-webkit-backdrop-filter:blur(8px) saturate(1.6);backdrop-filter:blur(8px) saturate(1.6)}
+
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
   .track,.ant,.waves path,.xr,.led,.wdot,.needle,.cable2,.flow,.pl,.join::before,.p-top::after,.halo,.ping{animation:none}
