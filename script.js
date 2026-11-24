@@ -269,7 +269,8 @@
     /* satu transform, satu easing: x, y, dan ukuran bergerak serempak sehingga jalurnya lurus */
     const o = { duration: 950, delay: 160, fill: 'forwards', easing: 'cubic-bezier(.65,0,.2,1)' };
     fly.animate([{ transform: 'translate3d(0,0,0) scale(1)' }, { transform: `translate3d(${dx}px,${dy}px,0) scale(${s})` }], o);
-    fi.animate([{ backgroundColor: 'rgba(207,245,231,0)', color: '#ffffff' }, { backgroundColor: 'rgb(207,245,231)', color: 'rgb(5,46,54)' }], o).finished.then(land, land);
+    const px = v => { const e = document.createElement('i'); e.style.color = v; document.body.append(e); const r = getComputedStyle(e).color; e.remove(); return r; };
+    fi.animate([{ backgroundColor: px('color-mix(in srgb,var(--mint) 0%,transparent)'), color: '#ffffff' }, { backgroundColor: px('var(--mint)'), color: px('var(--deep)') }], o).finished.then(land, land);
   }
 
   if (reduce || !intro || !mark || !intro.animate) {
@@ -366,7 +367,7 @@
   $$('.hs, .ticket').forEach(el => io.observe(el));
 
   /* warna latar halaman berubah mengikuti section */
-  const bgs = { keunggulan: '#EAF8F3', paket: '#FFF0CC', area: '#D6F2EF', 'cara-pasang': '#FFE6D4', faq: '#E4F6EC' };
+  const bgs = { keunggulan: 'var(--c60)', paket: 'color-mix(in srgb,var(--c10) 7%,var(--c60))', area: 'color-mix(in srgb,var(--c30) 9%,var(--c60))', 'cara-pasang': 'color-mix(in srgb,var(--c10) 4%,var(--c60))', faq: 'color-mix(in srgb,var(--c30) 5%,var(--c60))' };
   const so = new IntersectionObserver(es => es.forEach(e => {
     if (e.isIntersecting) document.body.style.backgroundColor = bgs[e.target.id];
   }), { rootMargin: '-50% 0px -50% 0px' });
